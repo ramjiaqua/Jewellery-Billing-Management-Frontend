@@ -16,19 +16,17 @@ export default function Home() {
          description={SHOP_NAME}
       />
       <div className="grid grid-cols-12 gap-4 md:gap-6">
-        <div className="col-span-12 space-y-6 xl:col-span-7">
+        <div className="col-span-12 space-y-6 xl:col-span-8">
           <EcommerceMetrics />
 
-          <MonthlySalesChart />
+         {/* <MonthlySalesChart />*/}
         </div>
 
-        <div className="col-span-12 xl:col-span-5">
+      {/*  <div className="col-span-12 xl:col-span-5">
           <MonthlyTarget />
-        </div>
+        </div>*/}
 
-        <div className="col-span-12">
-          <StatisticsChartCopy />
-        </div>
+
 
         <div className="col-span-12">
           <StatisticsChart />

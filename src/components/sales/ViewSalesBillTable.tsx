@@ -304,19 +304,19 @@ export default function ViewSalesBillTable() {
                                 </TableCell>
                                 <TableCell
                                     className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
-                                    {s.billRate}
+                                    ₹{s.billRate}
                                 </TableCell>
                                 <TableCell
                                     className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
-                                    {s.billMakingCharge}
+                                    ₹{s.billMakingCharge}
                                 </TableCell>
                                 <TableCell
                                     className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
-                                    {s.billTotalAmount}
+                                    ₹{s.billTotalAmount}
                                 </TableCell>
                                 <TableCell
                                     className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
-                                    {s.billPaidAmount}
+                                    ₹{s.billPaidAmount}
                                 </TableCell>
                                 <TableCell
                                     className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
@@ -334,7 +334,7 @@ export default function ViewSalesBillTable() {
                                             })()
                                         }
                                     >
-                                        {s.billBalance}
+                                        ₹{s.billBalance}
                                     </Badge>
                                 </TableCell>
                                 <TableCell
