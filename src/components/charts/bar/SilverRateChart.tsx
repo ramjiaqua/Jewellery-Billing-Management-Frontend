@@ -1,7 +1,43 @@
 import Chart from "react-apexcharts";
 import { ApexOptions } from "apexcharts";
+import { useEffect, useState } from "react";
+import axios from "axios";
+import {API_URL} from "../../../common/constants.tsx";
 
-export default function BarChartOne() {
+export default function SilverRateChart() {
+  const [categories, setCategories] = useState<string[]>([]);
+  const [seriesData, setSeriesData] = useState<number[]>([]);
+
+  useEffect(() => {
+    fetchGoldRates();
+  }, []);
+
+  const fetchGoldRates = async () => {
+    try {
+      const response = await axios.get(`${API_URL}/api/rate/daily-rate`);
+
+      const data = response.data;
+
+      // Extract dates
+      const dates = data.map(
+          (item: any) => item.rateDate
+      );
+
+      // Extract rates
+      const rates = data.map(
+          (item: any) => item.silverRate
+      );
+console.log(dates);
+      console.log(rates);
+
+      setCategories(dates);
+      setSeriesData(rates);
+
+    } catch (error) {
+      console.log("Error loading gold rates:", error);
+    }
+  };
+
   const options: ApexOptions = {
     colors: ["#465fff"],
     chart: {
@@ -29,20 +65,7 @@ export default function BarChartOne() {
       colors: ["transparent"],
     },
     xaxis: {
-      categories: [
-        "Jan",
-        "Feb",
-        "Mar",
-        "Apr",
-        "May",
-        "Jun",
-        "Jul",
-        "Aug",
-        "Sep",
-        "Oct",
-        "Nov",
-        "Dec",
-      ],
+      categories: categories,
       axisBorder: {
         show: false,
       },
@@ -84,7 +107,7 @@ export default function BarChartOne() {
   const series = [
     {
       name: "Sales",
-      data: [168, 385, 201, 298, 187, 195, 291, 110, 215, 390, 280, 112],
+      data: seriesData,
     },
   ];
   return (
@@ -93,5 +116,7 @@ export default function BarChartOne() {
         <Chart options={options} series={series} type="bar" height={180} />
       </div>
     </div>
+
+
   );
 }

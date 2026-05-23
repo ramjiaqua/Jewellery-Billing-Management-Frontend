@@ -1,7 +1,9 @@
 import PageBreadcrumb from "../../components/common/PageBreadCrumb";
 import PageMeta from "../../components/common/PageMeta";
 import Button from "../../components/ui/button/Button";
-import {API_URL, SHOP_NAME} from "../../common/constants";
+import {API_URL} from "../../common/constants";
+import {SHOP_NAME} from "../../common/constants";
+
 import  {useRef, useState} from "react";
 import ComponentCard from "../../components/common/ComponentCard";
 import Label from "../../components/form/Label";
@@ -103,7 +105,7 @@ export default function GenerateSalesBill() {
         if (!finalFormData) return; // safety
 
         const message =
-            {SHOP_NAME}+"\n\n" +
+            SHOP_NAME + "\n\n" +
             "ரசீது எண்: " + finalFormData.billNumber + "\n" +
             "பெயர்: " + finalFormData.billName + "\n" +
             "மொத்தம்: ₹ " + finalFormData.billTotalAmount + "\n" +

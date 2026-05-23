@@ -1,6 +1,7 @@
 import PageBreadcrumb from "../../components/common/PageBreadCrumb";
 import ComponentCard from "../../components/common/ComponentCard";
-import BarChartOne from "../../components/charts/bar/BarChartOne";
+import GoldRateChart from "../../components/charts/bar/GoldRateChart";
+import SilverRateChart from "../../components/charts/bar/SilverRateChart";
 import PageMeta from "../../components/common/PageMeta";
 
 export default function BarChart() {
@@ -12,10 +13,16 @@ export default function BarChart() {
       />
       <PageBreadcrumb pageTitle="Bar Chart" />
       <div className="space-y-6">
-        <ComponentCard title="Bar Chart 1">
-          <BarChartOne />
+        <ComponentCard title="Gold Rate">
+          <GoldRateChart />
         </ComponentCard>
       </div>
+
+        <div className="space-y-6">
+            <ComponentCard title="Silver Rate">
+                <SilverRateChart />
+            </ComponentCard>
+        </div>
     </div>
   );
 }

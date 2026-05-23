@@ -40,7 +40,7 @@ const PrintSalesBill = forwardRef<HTMLDivElement, BillProps>(
                 {/* SHOP DETAILS */}
                 <div style={{ textAlign: "center" }}>
                     <h2 style={{ margin: 0, color: "#d4af37" }}>
-                        💎 {SHOP_NAME}
+                         {SHOP_NAME}
                     </h2>
                     <p style={{ margin: 0 }}>{SHOP_ADDRESS}</p>
                     <p style={{ margin: 0 }}>{SHOP_PHONE}</p>

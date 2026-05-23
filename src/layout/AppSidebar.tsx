@@ -84,8 +84,7 @@ const othersItems: NavItem[] = [
     subItems: [
       { name: "Sales Chart", path: "/line-chart", pro: false },
       { name: "Purchase Chart", path: "/line-chart", pro: false },
-      { name: "Gold Rate Chart", path: "/bar-chart", pro: false },
-      { name: "Silver Rate Chart", path: "/bar-chart", pro: false },
+      { name: "Gold/Silver Rate Chart", path: "/bar-chart", pro: false },
     ],
   },
   /*{
