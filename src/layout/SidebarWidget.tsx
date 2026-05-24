@@ -1,7 +1,7 @@
 
 import {useEffect, useState} from "react";
-import axios from "axios";
-import {API_URL} from "../common/constants.tsx";
+import api from "../common/axiosConfig";
+
 
 export default function SidebarWidget() {
 
@@ -13,7 +13,7 @@ export default function SidebarWidget() {
 
     const fetchViewRate = async () => {
         try {
-            const response = await axios.get(`${API_URL}/api/rate/latest`);
+            const response = await api.get("/api/rate/latest");
 
             console.log(response);
             setTodayRate(response.data);

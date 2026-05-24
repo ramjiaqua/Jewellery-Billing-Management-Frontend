@@ -3,9 +3,8 @@ import { EyeCloseIcon, EyeIcon } from "../../icons";
 import Label from "../form/Label";
 import Input from "../form/input/InputField";
 import Button from "../ui/button/Button";
-import axios from "axios";
+import api from "../../common/axiosConfig";
 import { useNavigate } from "react-router-dom";
-import {API_URL} from "../../common/constants";
 import {SHOP_NAME, SHOP_ADDRESS, SHOP_PHONE} from "../../common/constants";
 
 
@@ -24,9 +23,12 @@ export default function SignInForm() {
         }
        try {
       console.log("Inside handle login");
+           console.log(user);
       setLoading(true);
-          const response = await axios.post(`${API_URL}/auth/login`, user);
-          localStorage.setItem("token", response.data.token);
+           const response = await api.post(
+               "/api/auth/login",
+               user
+           );          localStorage.setItem("token", response.data.token);
           localStorage.setItem("role", response.data.role);
           localStorage.setItem("username", response.data.username);
           localStorage.setItem("fullname", response.data.fullname);
@@ -35,10 +37,17 @@ export default function SignInForm() {
           /* if (response.data.role === "ADMIN") navigate("/dashboard");
           else if (response.data.role === "STAFF") navigate("/customers");
           else navigate("/chitscheme"); */
-           } catch (error) {
-              console.error("Login failed:", error);
-              alert("Invalid username or password");
-            }
+           } catch (error: any) {
+           console.error("Login failed");
+
+           console.log(error.response?.data);
+           console.log(error.response?.status);
+
+           alert(
+               error.response?.data?.message ||
+               "Login failed"
+           );
+       }
         finally {
           setLoading(false); // ✅ always runs
         }

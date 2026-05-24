@@ -19,9 +19,11 @@ type NavItem = {
   path?: string;
   subItems?: { name: string; path: string; pro?: boolean; new?: boolean }[];
 };
+const userRole = localStorage.getItem("role") || "";
 
+console.log(userRole);
 const navItems: NavItem[] = [
-  {
+  /*{
     icon: <GridIcon />,
     name: "Sales",
     subItems: [
@@ -29,8 +31,39 @@ const navItems: NavItem[] = [
         { name: "View Bill", path: "/view-sales-bill", pro: false },
         { name: "Re-Print Bill", path: "/", pro: false }
     ],
-  },
- {
+  },*/
+
+  ...( ["ADMIN", "STAFF"].includes(userRole)
+          ? [{
+            icon: <GridIcon />,
+            name: "Sales",
+            subItems: [
+              { name: "Generate Bill", path: "/generate-sales-bill", pro: false },
+              { name: "View Bill", path: "/view-sales-bill", pro: false },
+              { name: "Re-Print Bill", path: "/", pro: false }
+            ],
+          }]
+          : []
+  ),
+
+  ...( ["ADMIN", "STAFF"].includes(userRole)
+          ? [{
+            icon: <GridIcon />,
+            name: "Purchase",
+            subItems: [
+              { name: "New Item", path: "/", pro: false },
+              { name: "Old Item", path: "/", pro: false },
+              { name: "Balance Due", path: "/", pro: false }
+            ],
+          }]
+          : []
+  ),
+
+
+
+
+
+/* {
     icon: <GridIcon />,
     name: "Purchase",
     subItems: [
@@ -38,7 +71,7 @@ const navItems: NavItem[] = [
         { name: "Old Item", path: "/", pro: false },
         { name: "Balance Due", path: "/", pro: false }
     ],
-  },
+  },*/
  {
     name: "Chit Scheme",
     icon: <ListIcon />,
@@ -47,17 +80,34 @@ const navItems: NavItem[] = [
                { name: "Subscriptions", path: "/basic-tables", pro: false }
     ],
   },
-  {
-    icon: <GridIcon />,
-    name: "Update Today's Rate",
-    path: "/update-todays-rate",
-  },
-  {
+
+  ...( ["ADMIN", "STAFF"].includes(userRole)
+          ? [{
+            icon: <GridIcon />,
+            name: "Update Today's Rate",
+            path: "/update-todays-rate",
+          }]
+          : []
+  ),
+
+
+  ...(userRole === "ADMIN"
+      ? [{
+        icon: <UserCircleIcon />,
+        name: "Add/Modify User Profile",
+        path: "/users",
+      }]
+      : []),
+
+
+
+
+  /*{
     icon: <UserCircleIcon />,
     name: "Add/Modify User Profile",
-    path: "/profile",
+    path: "/users",
   },
- /*{
+ {
      icon: <CalenderIcon />,
      name: "Calendar",
      path: "/calendar",
@@ -82,8 +132,27 @@ const othersItems: NavItem[] = [
     icon: <PieChartIcon />,
     name: "Charts",
     subItems: [
-      { name: "Sales Chart", path: "/line-chart", pro: false },
-      { name: "Purchase Chart", path: "/line-chart", pro: false },
+      ...( ["ADMIN", "STAFF"].includes(userRole)
+          ? [
+            {
+              name: "Sales Chart",
+              path: "/line-chart",
+              pro: false,
+            }
+          ]
+          : []),
+      ...( ["ADMIN", "STAFF"].includes(userRole)
+          ? [
+            {
+              name: "Purchase Chart",
+              path: "/line-chart",
+              pro: false,
+            }
+          ]
+          : []),
+
+      /*{ name: "Sales Chart", path: "/line-chart", pro: false },
+      { name: "Purchase Chart", path: "/line-chart", pro: false },*/
       { name: "Gold/Silver Rate Chart", path: "/bar-chart", pro: false },
     ],
   },

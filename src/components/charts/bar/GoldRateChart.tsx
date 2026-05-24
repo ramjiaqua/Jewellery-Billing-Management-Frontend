@@ -1,8 +1,7 @@
 import Chart from "react-apexcharts";
 import { ApexOptions } from "apexcharts";
 import { useEffect, useState } from "react";
-import axios from "axios";
-import {API_URL} from "../../../common/constants.tsx";
+import api from "../../../common/axiosConfig";
 
 export default function GoldRateChart() {
   const [categories, setCategories] = useState<string[]>([]);
@@ -14,8 +13,8 @@ export default function GoldRateChart() {
 
   const fetchGoldRates = async () => {
     try {
-      const response = await axios.get(`${API_URL}/api/rate/daily-rate`);
-
+      const response = await api.get("/api/rate/daily-rate");
+console.log(response);
       const data = response.data;
 
       // Extract dates

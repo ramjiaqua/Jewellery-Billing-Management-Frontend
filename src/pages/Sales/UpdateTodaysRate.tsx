@@ -1,12 +1,12 @@
 import PageBreadcrumb from "../../components/common/PageBreadCrumb";
 import PageMeta from "../../components/common/PageMeta";
 import Button from "../../components/ui/button/Button";
-import {API_URL, SHOP_NAME} from "../../common/constants";
+import {SHOP_NAME} from "../../common/constants";
 import {useState} from "react";
 import ComponentCard from "../../components/common/ComponentCard";
 import Label from "../../components/form/Label";
 import Input from "../../components/form/input/InputField";
-import axios from "axios";
+import api from "../../common/axiosConfig";
 import { useNavigate } from "react-router-dom";
 export default function UpdateTodaysRate() {
     const [formData, setFormData] = useState({
@@ -48,7 +48,7 @@ export default function UpdateTodaysRate() {
                 silverRate: Number(formData.silverRate)
             };
 
-            await axios.post(`${API_URL}/api/rate`, finalFormData);
+            await api.post("/api/rate", finalFormData);
             alert("Rate updated successfully");
 // ✅ redirect to home
             navigate("/home");

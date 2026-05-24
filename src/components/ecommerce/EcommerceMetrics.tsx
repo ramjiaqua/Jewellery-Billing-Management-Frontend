@@ -3,8 +3,8 @@ import {
   GroupIcon,
 } from "../../icons";
 import {useEffect, useState} from "react";
-import {API_URL} from "../../common/constants.tsx";
-import axios from "axios";
+import api from "../../common/axiosConfig";
+
 
 
 export default function EcommerceMetrics() {
@@ -28,9 +28,7 @@ export default function EcommerceMetrics() {
 
   const fetchTodaySales = async () => {
     try {
-      const response = await axios.get(
-          `${API_URL}/api/bills/today-sales-count`
-      );
+      const response = await api.get("/api/bills/today-sales-count");
 
       setTodaySalesCount(response.data);
 
@@ -41,9 +39,7 @@ export default function EcommerceMetrics() {
 
   const fetchTodayAmount = async () => {
     try {
-      const response = await axios.get(
-          `${API_URL}/api/bills/today-total-amount`
-      );
+      const response = await api.get("/api/bills/today-total-amount");
 
       setTodayAmount(response.data);
 
@@ -54,9 +50,7 @@ export default function EcommerceMetrics() {
 
   const fetchTodayDueAmount = async () => {
     try {
-      const response = await axios.get(
-          `${API_URL}/api/bills/today-total-balance-due-amount`
-      );
+      const response = await api.get("/api/bills/today-total-balance-due-amount");
 
       setTodayDueAmount(response.data);
 

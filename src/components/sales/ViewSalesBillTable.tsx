@@ -5,10 +5,9 @@ import {
     TableHeader,
     TableRow,
 } from "../ui/table";
-import {API_URL} from '../../common/constants';
-import axios from "axios";
 import Badge from "../ui/badge/Badge";
 import { useEffect, useState } from "react";
+import api from "../../common/axiosConfig.tsx";
 
 export default function ViewSalesBillTable() {
     const [salesBills, setSalesBills] = useState<any[]>([]);
@@ -40,7 +39,7 @@ export default function ViewSalesBillTable() {
 
     const fetchViewBills = async () => {
         try {
-            const response = await axios.get(`${API_URL}/api/bills`,
+            const response = await api.get("/api/bills",
                 {
                     params: {
                         page,

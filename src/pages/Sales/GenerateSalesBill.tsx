@@ -1,15 +1,13 @@
 import PageBreadcrumb from "../../components/common/PageBreadCrumb";
 import PageMeta from "../../components/common/PageMeta";
 import Button from "../../components/ui/button/Button";
-import {API_URL} from "../../common/constants";
 import {SHOP_NAME} from "../../common/constants";
-
 import  {useRef, useState} from "react";
 import ComponentCard from "../../components/common/ComponentCard";
 import Label from "../../components/form/Label";
 import Input from "../../components/form/input/InputField";
 import Select from "../../components/form/Select";
-import axios from "axios";
+import api from "../../common/axiosConfig";
 import { useReactToPrint } from "react-to-print";
 import PrintSalesBill from '../../components/sales/PrintSalesBill';
 
@@ -74,7 +72,7 @@ export default function GenerateSalesBill() {
             "http://localhost:8080/api/bills",
             finalFormData
         );*/
-            const response = await axios.post(`${API_URL}/api/bills`,finalFormData);
+            const response = await api.post("/api/bills",finalFormData);
 
             console.log(response);
             // ✅ Store generated bill

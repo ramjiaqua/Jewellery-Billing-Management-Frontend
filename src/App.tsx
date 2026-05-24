@@ -21,7 +21,8 @@ import Home from "./pages/Dashboard/Home";
 import ViewSalesBill from "./pages/Sales/ViewSalesBill";
 import GenerateSalesBill from "./pages/Sales/GenerateSalesBill";
 import UpdateTodaysRate from "./pages/Sales/UpdateTodaysRate";
-
+import ProtectedRoute from "./components/ProtectedRoute";
+import ViewUsersProfile from "./pages/Users/ViewUsers";
 
 
 
@@ -37,9 +38,16 @@ export default function App() {
                   <Route path="/signup" element={<SignUp />} />
           {/* Dashboard Layout */}
           <Route element={<AppLayout />}>
-            <Route index path="/home" element={<Home />} />
+            {/*<Route index path="/home" element={<Home />} />*/}
+            <Route path="/home" element={
+                  <ProtectedRoute>
+                    <Home />
+                  </ProtectedRoute>
+                }
+            />
 
             {/* Others Page */}
+            <Route path="/profile" element={<UserProfiles />} />
             <Route path="/profile" element={<UserProfiles />} />
             <Route path="/calendar" element={<Calendar />} />
             <Route path="/blank" element={<Blank />} />
@@ -51,11 +59,32 @@ export default function App() {
             <Route path="/basic-tables" element={<BasicTables />} />
 
             {/* Sales */}
-            <Route path="/view-sales-bill" element={<ViewSalesBill />} />
-            <Route path="/generate-sales-bill" element={<GenerateSalesBill />} />
 
-            <Route path="/update-todays-rate" element={<UpdateTodaysRate />} />
+            <Route path="/view-sales-bill" element={
+              <ProtectedRoute>
+                <ViewSalesBill />
+              </ProtectedRoute>
+            }
+            />
+            <Route path="/generate-sales-bill" element={
+              <ProtectedRoute>
+                <GenerateSalesBill />
+              </ProtectedRoute>
+            }
+            />
+            <Route path="/update-todays-rate" element={
+              <ProtectedRoute>
+                <UpdateTodaysRate />
+              </ProtectedRoute>
+            }
+            />
 
+            <Route path="/users" element={
+              <ProtectedRoute>
+                <ViewUsersProfile />
+              </ProtectedRoute>
+            }
+            />
 
             {/* Ui Elements */}
             <Route path="/alerts" element={<Alerts />} />
@@ -67,7 +96,12 @@ export default function App() {
 
             {/* Charts */}
             <Route path="/line-chart" element={<LineChart />} />
-            <Route path="/bar-chart" element={<BarChart />} />
+            <Route path="/bar-chart" element={
+              <ProtectedRoute>
+                <BarChart />
+              </ProtectedRoute>
+            }
+            />
           </Route>
 
 
