@@ -10,6 +10,7 @@ import api from "../../common/axiosConfig";
 export default function EcommerceMetrics() {
   const [todaySalesCount, setTodaySalesCount] = useState(0);
   const [todayAmount, setTodayAmount] = useState(0);
+  const [todayPaidAmount, setTodayPaidAmount] = useState(0);
   const [todayDueAmount, setTodayDueAmount] = useState(0);
 
 
@@ -19,6 +20,10 @@ export default function EcommerceMetrics() {
 
   useEffect(() => {
     fetchTodayAmount();
+  }, []);
+
+  useEffect(() => {
+    fetchTodayPaidAmount();
   }, []);
 
   useEffect(() => {
@@ -48,6 +53,17 @@ export default function EcommerceMetrics() {
     }
   };
 
+  const fetchTodayPaidAmount = async () => {
+    try {
+      const response = await api.get("/api/bills/today-total-paid-amount");
+
+      setTodayPaidAmount(response.data);
+
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
   const fetchTodayDueAmount = async () => {
     try {
       const response = await api.get("/api/bills/today-total-balance-due-amount");
@@ -60,7 +76,7 @@ export default function EcommerceMetrics() {
   };
 
   return (
-    <div className="grid grid-cols-1 gap-4 sm:grid-cols-3 md:gap-6">
+    <div className="grid grid-cols-1 gap-4 sm:grid-cols-4 md:gap-6">
       {/* <!-- Metric Item Start --> */}
       <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] md:p-6">
         <div className="flex items-center justify-center w-12 h-12 bg-gray-100 rounded-xl dark:bg-gray-800">
@@ -92,6 +108,24 @@ export default function EcommerceMetrics() {
             </span>
             <h4 className="mt-2 font-bold text-green-800 text-title-sm dark:text-white/90">
               ₹{todayAmount.toLocaleString()}
+            </h4>
+          </div>
+        </div>
+      </div>
+      {/* <!-- Metric Item End --> */}
+
+      {/* <!-- Metric Item Start --> */}
+      <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] md:p-6">
+        <div className="flex items-center justify-center w-12 h-12 bg-gray-100 rounded-xl dark:bg-gray-800">
+          <BoxIconLine className="text-gray-800 size-6 dark:text-white/90" />
+        </div>
+        <div className="flex items-end justify-between mt-5">
+          <div>
+            <span className="text-sm text-gray-500 dark:text-gray-400">
+              Total Sales Amount Paid
+            </span>
+            <h4 className="mt-2 font-bold text-blue-800 text-title-sm dark:text-white/90">
+              ₹{todayPaidAmount.toLocaleString()}
             </h4>
           </div>
         </div>
