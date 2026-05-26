@@ -102,12 +102,12 @@ const navItems: NavItem[] = [
 
 
 
-  /*{
+  {
     icon: <UserCircleIcon />,
-    name: "Add/Modify User Profile",
-    path: "/users",
+    name: "Profile",
+    path: "/profile",
   },
- {
+  /*{{
      icon: <CalenderIcon />,
      name: "Calendar",
      path: "/calendar",
