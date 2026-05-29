@@ -29,7 +29,9 @@ const amountStyle = {
 };
 
 const PrintSalesBill = forwardRef<HTMLDivElement, BillProps>(
+
     ({bill}, ref) => {
+        if (!bill?.billNumber) return null;
         return (
             <div ref={ref} style={{padding: "20px", fontFamily: "Arial"}}>
                 {/* HEADER */}
@@ -86,9 +88,9 @@ const PrintSalesBill = forwardRef<HTMLDivElement, BillProps>(
                     <tr>
                         <td style={td}>{bill.billItemName}</td>
                         <td style={td}>{bill.billWeight}</td>
-                        <td style={td}>₹ {bill.billRate.toLocaleString()}</td>
-                        <td style={td}>₹ {bill.billMakingCharge.toLocaleString()}</td>
-                        <td style={td}>₹ {bill.billTotalAmount.toLocaleString()}</td>
+                        <td style={td}>₹ {Number(bill.billRate ?? 0).toLocaleString()}</td>
+                        <td style={td}>₹ {Number(bill.billMakingCharge ?? 0).toLocaleString()}</td>
+                        <td style={td}>₹ {Number(bill.billTotalAmount ?? 0).toLocaleString()}</td>
                     </tr>
                     </tbody>
                 </table>
@@ -96,17 +98,17 @@ const PrintSalesBill = forwardRef<HTMLDivElement, BillProps>(
 
                 <div style={amountStyle}>
                     <span>Grand Total</span>
-                    <span>₹ {bill.billTotalAmount.toLocaleString()}</span>
+                    <span>₹ {Number(bill.billTotalAmount ?? 0).toLocaleString()}</span>
                 </div>
 
                 <div style={amountStyle}>
                     <span>Paid Amount</span>
-                    <span>₹ {bill.billPaidAmount.toLocaleString()}</span>
+                    <span>₹ {Number(bill.billPaidAmount ?? 0).toLocaleString()}</span>
                 </div>
 
                 <div style={amountStyle}>
                     <span>Balance Amount</span>
-                    <span>₹ {bill.billBalance.toLocaleString()}</span>
+                    <span>₹ {Number(bill.billBalance ?? 0).toLocaleString()}</span>
                 </div>
 
                 <h3 style={{textAlign: "right", marginTop: "10px"}}>

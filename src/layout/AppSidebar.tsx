@@ -39,8 +39,7 @@ const navItems: NavItem[] = [
             name: "Sales",
             subItems: [
               { name: "Generate Bill", path: "/generate-sales-bill", pro: false },
-              { name: "View Bill", path: "/view-sales-bill", pro: false },
-              { name: "Re-Print Bill", path: "/", pro: false }
+              { name: "View Bill", path: "/view-sales-bill", pro: false }
             ],
           }]
           : []

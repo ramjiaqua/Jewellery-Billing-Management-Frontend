@@ -6,13 +6,15 @@ import {
     TableRow,
 } from "../ui/table";
 import Badge from "../ui/badge/Badge";
-import { useEffect, useState } from "react";
+import {useEffect, useRef, useState} from "react";
 import api from "../../common/axiosConfig.tsx";
 import {Modal} from "../ui/modal";
 import Label from "../form/Label.tsx";
 import Input from "../form/input/InputField.tsx";
 import Button from "../ui/button/Button.tsx";
 import {useModal} from "../../hooks/useModal.ts";
+import PrintSalesBill from './PrintSalesBill';
+import {useReactToPrint} from "react-to-print";
 
 export default function ViewSalesBillTable() {
     const [salesBills, setSalesBills] = useState<any[]>([]);
@@ -26,10 +28,16 @@ export default function ViewSalesBillTable() {
     const [fromDate, setFromDate] = useState("");
     const [toDate, setToDate] = useState("");
     const paymentMethod = ["Cash", "Card", "UPI"];
-    const { isOpen, openModal, closeModal } = useModal();
+    const {isOpen: isPayModalOpen, openModal: openPayModal, closeModal: closePayModal,} = useModal();
+    const {isOpen: isViewModalOpen, openModal: openViewModal, closeModal: closeViewModal,} = useModal();
     const [isEditMode, setIsEditMode] = useState(false);
     const [selectedBill, setSelectedBill] = useState<any>({});
     const [payAmount, setPayAmount] = useState("");
+    const printRef = useRef<HTMLDivElement>(null);
+    const handleRePrint = useReactToPrint({
+        contentRef: printRef
+    });
+
     const parseDate = (dateStr: string) => {
         if (!dateStr) return new Date(0);
 
@@ -63,7 +71,7 @@ console.log(payAmount);
                 );
             }
             await fetchViewBills();
-            closeModal();
+            closePayModal();
         } catch (error) {
             console.error(error);
         }
@@ -225,12 +233,7 @@ console.log(payAmount);
                             >
                                 Name
                             </TableCell>
-                            <TableCell
-                                isHeader
-                                className="px-5 py-3 font-medium text-start text-theme-sm"
-                            >
-                                Address
-                            </TableCell>
+
                             <TableCell
                                 isHeader
                                 className="px-5 py-3 font-medium text-start text-theme-sm"
@@ -306,7 +309,15 @@ console.log(payAmount);
 
                     <TableBody className="divide-y divide-gray-100 dark:divide-white/[0.05]">
                         {salesBills.map((s) => (
-                            <TableRow key={s.id}>
+                            <TableRow
+                                key={s.id}
+                                className="cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800"
+                                onClick={() => {
+                                    setSelectedBill(s);
+
+                                    openViewModal();
+                                }}
+                            >
                                 <TableCell
                                     className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-40">
                                     {s.billNumber}
@@ -319,10 +330,7 @@ console.log(payAmount);
                                     className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
                                     {s.billName}
                                 </TableCell>
-                                <TableCell
-                                    className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
-                                    {s.billAddress}
-                                </TableCell>
+
                                 <TableCell
                                     className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
                                     {s.billPhone}
@@ -386,10 +394,11 @@ console.log(payAmount);
                                     className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
 
                                     <button
-                                        onClick={() => {
+                                        onClick={(e) => {
+                                            e.stopPropagation();
                                             setSelectedBill(s);
                                             setIsEditMode(true);
-                                            openModal();
+                                            openPayModal();
                                         }}
                                         className="flex w-full items-center justify-center gap-2 rounded-full border border-gray-300 bg-white px-4 py-3 text-sm font-medium text-gray-700 shadow-theme-xs hover:bg-gray-50 hover:text-gray-800 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/[0.03] dark:hover:text-gray-200 lg:inline-flex lg:w-auto"
                                     >
@@ -442,7 +451,7 @@ console.log(payAmount);
             </div>
         </div>
 
-    <Modal isOpen={isOpen} onClose={closeModal} className="max-w-[700px] m-4">
+    <Modal isOpen={isPayModalOpen} onClose={closePayModal} className="max-w-[700px] m-4">
         <div className="relative w-full p-4 overflow-y-auto bg-white no-scrollbar rounded-3xl dark:bg-gray-900 lg:p-11">
             <div className="px-2 pr-14">
                 <h4 className="mb-2 text-2xl font-semibold text-gray-800 dark:text-white/90">
@@ -495,7 +504,7 @@ console.log(payAmount);
                     <Button
                         size="sm"
                         variant="outline"
-                        onClick={closeModal}
+                        onClick={closePayModal}
                     >
                         Close
                     </Button>
@@ -510,6 +519,112 @@ console.log(payAmount);
             </form>
         </div>
     </Modal>
+
+            <Modal isOpen={isViewModalOpen} onClose={closeViewModal} className="max-w-[700px] m-4">
+                <div className="relative w-full p-4 overflow-y-auto bg-white no-scrollbar rounded-3xl dark:bg-gray-900 lg:p-11">
+                    <div className="px-2 pr-14">
+                        <h4 className="mb-2 text-2xl font-semibold text-gray-800 dark:text-white/90">
+                            View Bill Details
+                        </h4>
+                        <p className="mb-6 text-sm text-gray-500 dark:text-gray-400 lg:mb-7">
+                            View Customer Bill Details.
+                        </p>
+                    </div>
+                    <form className="flex flex-col">
+                        <div className="px-2 overflow-y-auto custom-scrollbar">
+                            <div className="grid grid-cols-1 gap-x-6 gap-y-5 lg:grid-cols-2">
+                                <div>
+                                    <Label>Bill Number</Label>
+                                    {selectedBill.billNumber}
+                                </div>
+                                <div>
+                                    <Label>Date</Label>
+                                    {selectedBill.billDate}
+                                </div>
+                                <div>
+                                    <Label>Name</Label>
+                                    {selectedBill.billName}
+                                </div>
+                                <div>
+                                    <Label>Address</Label>
+                                    {selectedBill.billAddress}
+                                </div>
+                                <div>
+                                    <Label>Phone Number</Label>
+                                    {selectedBill.billPhone}
+                                </div>
+                                <div>
+                                    <Label>Item</Label>
+                                    {selectedBill.billItemName}
+                                </div>
+                                <div>
+                                    <Label>Weight</Label>
+                                    {selectedBill.billWeight}
+                                </div>
+                                <div>
+                                    <Label>Rate</Label>
+                                    {selectedBill.billRate}
+                                </div>
+                                <div>
+                                    <Label>Making Charge</Label>
+                                    {selectedBill.billMakingCharge}
+                                </div>
+                                <div>
+                                    <Label>Total Amount</Label>
+                                    {selectedBill.billTotalAmount}
+                                </div>
+                                <div>
+                                    <Label>Paid Amount</Label>
+                                    {selectedBill.billPaidAmount}
+                                </div>
+                                <div>
+                                    <Label>Balance</Label>
+                                    {selectedBill.billBalance}
+                                </div>
+                                <div>
+                                    <Label>Due Date</Label>
+                                    {selectedBill.billBalanceDue}
+                                </div>
+                                <div>
+                                    <Label>Payment Mode</Label>
+                                    {selectedBill.billPaymentMode}
+                                </div>
+                                <div>
+                                    <Label>Billed By</Label>
+                                    {selectedBill.billBilledBy}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="flex items-center gap-3 px-2 mt-6 lg:justify-end">
+                            <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={closeViewModal}
+                            >
+                                Close
+                            </Button>
+                            <Button
+                                size="sm"
+                                onClick={() => {
+                                    closeViewModal(); // optional
+                                    setTimeout(() => {
+                                        handleRePrint();
+                                    }, 300); // allow render
+                                }}
+                            >
+                                Re-Print
+                            </Button>
+
+                        </div>
+                    </form>
+                </div>
+            </Modal>
+            {selectedBill && (
+                    <div style={{ display: "none" }}>
+                        <PrintSalesBill ref={printRef} bill={selectedBill} />
+                    </div>
+                )}
 </>
     );
 }
