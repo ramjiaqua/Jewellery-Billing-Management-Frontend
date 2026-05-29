@@ -381,7 +381,7 @@ console.log(payAmount);
                                 <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
                                     {s.billBilledBy}
                                 </TableCell>
-
+                                {s.billBalance > 0 && (
                                 <TableCell
                                     className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
 
@@ -412,6 +412,7 @@ console.log(payAmount);
                                     </button>
 
                                 </TableCell>
+                                    )}
                             </TableRow>
                         ))}
                     </TableBody>
