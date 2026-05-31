@@ -6,40 +6,37 @@ import {
     TableRow,
 } from "../ui/table";
 import Badge from "../ui/badge/Badge";
-import {useEffect, useRef, useState} from "react";
+import {useEffect, useState} from "react";
 import api from "../../common/axiosConfig.tsx";
-import {Modal} from "../ui/modal";
-import Label from "../form/Label.tsx";
-import Input from "../form/input/InputField.tsx";
-import Button from "../ui/button/Button.tsx";
-import {useModal} from "../../hooks/useModal.ts";
-import PrintSalesBill from '../sales/PrintSalesBill';
-import {useReactToPrint} from "react-to-print";
+
 
 export default function ViewChitCustomersTable() {
-    const [salesBills, setSalesBills] = useState<any[]>([]);
     const [chitCustomers, setChitCustomers] = useState<any[]>([]);
-
     const [loading, setLoading] = useState(true);
     const [page, setPage] = useState(0);
     const [size] = useState(10);
     const [totalPages, setTotalPages] = useState(0);
-    const [billNumberFilter, setBillNumberFilter] = useState("");
+    const [nameFilter, setNameFilter] = useState("");
     const [phoneFilter, setPhoneFilter] = useState("");
-    const [pendingOnly, setPendingOnly] = useState(false);
-    const [fromDate, setFromDate] = useState("");
-    const [toDate, setToDate] = useState("");
+    const [statusFilter, setStatusFilter] = useState("");
+
 
     useEffect(() => {
         void fetchViewCustomers();
-    }, []);
+    }, [page, size, nameFilter, phoneFilter, statusFilter]);
 
     const fetchViewCustomers = async () => {
         try {
-            const response = await api.get("/api/customers");
-            console.log("Customers API:", response.data);
-            console.log(response);
-            setChitCustomers(response.data);
+            const response = await api.get("/api/customers", {
+                params: {
+                    page,
+                    size,
+                    name: nameFilter || undefined,
+                    phone: phoneFilter || undefined,
+                    status: statusFilter || undefined,
+                },
+            });
+            setChitCustomers(response.data.content);
             setTotalPages(response.data.totalPages);
         } catch (error) {
             console.error("Error fetching Bills:", error);
@@ -62,11 +59,11 @@ export default function ViewChitCustomersTable() {
             <div className="flex flex-wrap gap-4 p-4">
                 <input
                     type="text"
-                    placeholder="Search Bill Number"
-                    value={billNumberFilter}
+                    placeholder="Search Customer Name"
+                    value={nameFilter}
                     onChange={(e) => {
                         setPage(0);
-                        setBillNumberFilter(e.target.value);
+                        setNameFilter(e.target.value);
                     }}
                     className="border rounded px-3 py-2"
                 />
@@ -82,79 +79,19 @@ export default function ViewChitCustomersTable() {
                     className="border rounded px-3 py-2"
                 />
 
-
-                <div className="flex gap-3">
-
-                    <div className="flex items-center gap-2">
-                        <label>From</label>
-
-                        <input
-                            type="date"
-                            value={
-                                fromDate
-                                    ? fromDate.split("-").reverse().join("-")
-                                    : ""
-                            }
-                            onChange={(e) => {
-                                setPage(0);
-
-                                const value = e.target.value;
-
-                                if (value) {
-                                    const [year, month, day] = value.split("-");
-                                    setFromDate(`${day}-${month}-${year}`);
-                                } else {
-                                    setFromDate("");
-                                }
-                            }}
-                            className="border rounded px-3 py-2"
-                        />
-                    </div>
-
-                    <div className="flex items-center gap-2">
-                        <label>To</label>
-
-                        <input
-                            type="date"
-                            value={
-                                toDate
-                                    ? toDate.split("-").reverse().join("-")
-                                    : ""
-                            }
-                            onChange={(e) => {
-                                setPage(0);
-
-                                const value = e.target.value;
-
-                                if (value) {
-                                    const [year, month, day] = value.split("-");
-                                    setToDate(`${day}-${month}-${year}`);
-                                } else {
-                                    setToDate("");
-                                }
-                            }}
-                            className="border rounded px-3 py-2"
-                        />
-                    </div>
-
-                </div>
-
-
-                <label className="flex items-center gap-2">
-
-                    <input
-                        type="checkbox"
-                        checked={pendingOnly}
-                        onChange={(e) => {
-                            setPage(0);
-                            setPendingOnly(e.target.checked);
-                        }}
-                    />
-
-                    Balance Greater Than 0
-                </label>
-
-            </div>
+                <select
+                    value={statusFilter}
+                    onChange={(e) => {
+                        setPage(0);
+                        setStatusFilter(e.target.value);
+                    }}
+                    className="border rounded px-3 py-2"
+                >
+                    <option value="">All Status</option>
+                    <option value="ACTIVE">Active</option>
+                    <option value="INACTIVE">Inactive</option>
+                </select>
+             </div>
             <div className="max-w-full overflow-x-auto">
                 <Table>
                     {/* Table Header */}
