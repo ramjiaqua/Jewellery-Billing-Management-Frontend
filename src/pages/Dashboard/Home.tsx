@@ -1,7 +1,4 @@
 import EcommerceMetrics from "../../components/ecommerce/EcommerceMetrics";
-import StatisticsChart from "../../components/ecommerce/StatisticsChart";
-import RecentOrders from "../../components/ecommerce/RecentOrders";
-import DemographicCard from "../../components/ecommerce/DemographicCard";
 import PageMeta from "../../components/common/PageMeta";
 import {SHOP_NAME} from "../../common/constants";
 
@@ -24,7 +21,7 @@ export default function Home() {
         </div>*/}
 
 
-
+{/*
         <div className="col-span-12">
           <StatisticsChart />
         </div>
@@ -35,7 +32,7 @@ export default function Home() {
 
         <div className="col-span-12 xl:col-span-7">
           <RecentOrders />
-        </div>
+        </div>*/}
       </div>
     </>
   );

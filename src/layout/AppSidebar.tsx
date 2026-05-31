@@ -57,26 +57,12 @@ const navItems: NavItem[] = [
           }]
           : []
   ),
-
-
-
-
-
-/* {
-    icon: <GridIcon />,
-    name: "Purchase",
-    subItems: [
-        { name: "New Item", path: "/", pro: false },
-        { name: "Old Item", path: "/", pro: false },
-        { name: "Balance Due", path: "/", pro: false }
-    ],
-  },*/
  {
     name: "Chit Scheme",
     icon: <ListIcon />,
-    subItems: [{ name: "Customers", path: "/basic-tables", pro: false },
-               { name: "Chit Schemes", path: "/basic-tables", pro: false },
-               { name: "Subscriptions", path: "/basic-tables", pro: false }
+    subItems: [{ name: "Customers", path: "/view-chit-customers", pro: false },
+               { name: "Chit Schemes", path: "/view-chit-scheme", pro: false },
+               { name: "Subscriptions", path: "/view-chit-subscription", pro: false }
     ],
   },
 

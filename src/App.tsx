@@ -23,6 +23,10 @@ import GenerateSalesBill from "./pages/Sales/GenerateSalesBill";
 import UpdateTodaysRate from "./pages/Sales/UpdateTodaysRate";
 import ProtectedRoute from "./components/ProtectedRoute";
 import ViewUsersProfile from "./pages/Users/ViewUsers";
+import ViewChitCustomers from "./pages/Chit/ViewChitCustomers";
+import ViewChitScheme from "./pages/Chit/ViewChitScheme";
+import ViewChitSubscription from "./pages/Chit/ViewChitSubscription";
+
 
 
 
@@ -82,6 +86,25 @@ export default function App() {
             <Route path="/users" element={
               <ProtectedRoute>
                 <ViewUsersProfile />
+              </ProtectedRoute>
+            }
+            />
+
+            <Route path="/view-chit-customers" element={
+              <ProtectedRoute>
+                <ViewChitCustomers />
+              </ProtectedRoute>
+            }
+            />
+            <Route path="/view-chit-scheme" element={
+              <ProtectedRoute>
+                <ViewChitScheme />
+              </ProtectedRoute>
+            }
+            />
+            <Route path="/view-chit-subscription" element={
+              <ProtectedRoute>
+                <ViewChitSubscription />
               </ProtectedRoute>
             }
             />
