@@ -244,7 +244,13 @@ console.log(payAmount);
                                 isHeader
                                 className="px-5 py-3 font-medium text-start text-theme-sm"
                             >
-                                Item
+                                Particulars
+                            </TableCell>
+                            <TableCell
+                                isHeader
+                                className="px-5 py-3 font-medium text-start text-theme-sm"
+                            >
+                                HSN Code
                             </TableCell>
                             <TableCell
                                 isHeader
@@ -252,7 +258,12 @@ console.log(payAmount);
                             >
                                 Weight
                             </TableCell>
-
+                            <TableCell
+                                isHeader
+                                className="px-5 py-3 font-medium text-start text-theme-sm"
+                            >
+                                Wastage
+                            </TableCell>
                             <TableCell
                                 isHeader
                                 className="px-5 py-3 font-medium text-start text-theme-sm"
@@ -265,6 +276,18 @@ console.log(payAmount);
                                 className="px-5 py-3 font-medium text-start text-theme-sm"
                             >
                                 Making Charge
+                            </TableCell>
+                            <TableCell
+                                isHeader
+                                className="px-5 py-3 font-medium text-start text-theme-sm"
+                            >
+                                SGST
+                            </TableCell>
+                            <TableCell
+                                isHeader
+                                className="px-5 py-3 font-medium text-start text-theme-sm"
+                            >
+                                CGST
                             </TableCell>
 
                             <TableCell
@@ -341,7 +364,15 @@ console.log(payAmount);
                                 </TableCell>
                                 <TableCell
                                     className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
+                                    {s.billHSNCode}
+                                </TableCell>
+                                <TableCell
+                                    className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
                                     {s.billWeight}
+                                </TableCell>
+                                <TableCell
+                                    className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
+                                    {s.billWastage}
                                 </TableCell>
                                 <TableCell
                                     className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
@@ -350,6 +381,14 @@ console.log(payAmount);
                                 <TableCell
                                     className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
                                     ₹{s.billMakingCharge}
+                                </TableCell>
+                                <TableCell
+                                    className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
+                                    ₹{s.billSGST}
+                                </TableCell>
+                                <TableCell
+                                    className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
+                                    ₹{s.billCGST}
                                 </TableCell>
                                 <TableCell
                                     className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
@@ -554,12 +593,20 @@ console.log(payAmount);
                                     {selectedBill.billPhone}
                                 </div>
                                 <div>
-                                    <Label>Item</Label>
+                                    <Label>Particulars</Label>
                                     {selectedBill.billItemName}
+                                </div>
+                                <div>
+                                    <Label>HSN Code</Label>
+                                    {selectedBill.billHSNCode}
                                 </div>
                                 <div>
                                     <Label>Weight</Label>
                                     {selectedBill.billWeight}
+                                </div>
+                                <div>
+                                    <Label>Wastage</Label>
+                                    {selectedBill.billWastage}
                                 </div>
                                 <div>
                                     <Label>Rate</Label>
@@ -568,6 +615,14 @@ console.log(payAmount);
                                 <div>
                                     <Label>Making Charge</Label>
                                     {selectedBill.billMakingCharge}
+                                </div>
+                                <div>
+                                    <Label>SGST</Label>
+                                    {selectedBill.billSGST}
+                                </div>
+                                <div>
+                                    <Label>CGST</Label>
+                                    {selectedBill.billCGST}
                                 </div>
                                 <div>
                                     <Label>Total Amount</Label>

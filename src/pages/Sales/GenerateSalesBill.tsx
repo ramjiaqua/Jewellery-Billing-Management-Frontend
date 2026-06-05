@@ -19,10 +19,13 @@ export default function GenerateSalesBill() {
         referred_by: "",
 
         billItemName: "",
+        billHSNCode: "",
         billWeight: "",
+        billWastage: "",
         billRate: "",
         billMakingCharge: "",
-
+        billSGST: "",
+        billCGST: "",
         billPaymentMode: "",
         billPaidAmount: "",
         billBalanceDue: "",
@@ -37,7 +40,7 @@ export default function GenerateSalesBill() {
 
     const total_amount =
         Number(formData?.billWeight || 0) * Number(formData?.billRate || 0) +
-        Number(formData?.billMakingCharge || 0);
+        Number(formData?.billMakingCharge || 0) +  Number(formData?.billWastage || 0) +  Number(formData?.billSGST || 0)+  Number(formData?.billCGST || 0) ;
 
     const balance_amount =
         total_amount - Number(formData?.billPaidAmount || 0);
@@ -158,14 +161,24 @@ export default function GenerateSalesBill() {
                     <ComponentCard title="Item Details">
                         <div className="space-y-6">
                             <div>
-                                <Label htmlFor="item_name">Item</Label>
+                                <Label htmlFor="item_name">Particulars</Label>
                                 <Input type="text" id="item_name" name="billItemName" onChange={handleChange}
                                        placeholder="Enter Items"/>
+                            </div>
+                            <div>
+                                <Label htmlFor="item_hsncode">HSN Code</Label>
+                                <Input type="text" id="item_hsncode" name="billHSNCode" onChange={handleChange}
+                                       placeholder="Enter HSN Code"/>
                             </div>
                             <div>
                                 <Label htmlFor="item_weight">Weight</Label>
                                 <Input type="text" id="item_weight" name="billWeight" onChange={handleChange}
                                        placeholder="Enter Weight"/>
+                            </div>
+                            <div>
+                                <Label htmlFor="item_wastage">Wastage</Label>
+                                <Input type="text" id="item_wastage" name="billWastage" onChange={handleChange}
+                                       placeholder="Enter Wastage"/>
                             </div>
                             <div>
                                 <Label htmlFor="item_rate">Rate</Label>
@@ -176,6 +189,16 @@ export default function GenerateSalesBill() {
                                 <Label htmlFor="item_making_charge">Making Charge</Label>
                                 <Input type="text" id="item_making_charge" name="billMakingCharge"
                                        onChange={handleChange} placeholder="Enter Making Charge"/>
+                            </div>
+                            <div>
+                                <Label htmlFor="sgst">SGST</Label>
+                                <Input type="text" id="sgst" name="billSGST" onChange={handleChange}
+                                       placeholder="SGST"/>
+                            </div>
+                            <div>
+                                <Label htmlFor="cgst">CGST</Label>
+                                <Input type="text" id="cgst" name="billCGST" onChange={handleChange}
+                                       placeholder="CGST"/>
                             </div>
                             <div>
                                 <Label htmlFor="totalAmount">Total Amount</Label>

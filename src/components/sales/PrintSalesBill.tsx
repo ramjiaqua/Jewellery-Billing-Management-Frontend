@@ -10,9 +10,13 @@ interface BillProps {
         billPhone: string;
         billAddress: string;
         billItemName: string;
+        billHSNCode: string;
         billWeight: number;
+        billWastage: number;
         billRate: number;
         billMakingCharge: number;
+        billSGST: number;
+        billCGST: number;
         billTotalAmount: number;
         billPaidAmount: number;
         billBalance: number;
@@ -77,19 +81,27 @@ const PrintSalesBill = forwardRef<HTMLDivElement, BillProps>(
                 <table style={{width: "100%", borderCollapse: "collapse"}}>
                     <thead>
                     <tr>
-                        <th style={th}>Item Name</th>
-                        <th style={th}>Weight (g)</th>
+                        <th style={th}>Particulars</th>
+                        <th style={th}>HSN Code</th>
+                        <th style={th}>Weight</th>
+                        <th style={th}>Wastage</th>
                         <th style={th}>Rate</th>
                         <th style={th}>Making Charge</th>
+                        <th style={th}>SGST</th>
+                        <th style={th}>CGST</th>
                         <th style={th}>Amount</th>
                     </tr>
                     </thead>
                     <tbody>
                     <tr>
                         <td style={td}>{bill.billItemName}</td>
+                        <td style={td}>{bill.billHSNCode}</td>
                         <td style={td}>{bill.billWeight}</td>
+                        <td style={td}>{bill.billWastage}</td>
                         <td style={td}>₹ {Number(bill.billRate ?? 0).toLocaleString()}</td>
                         <td style={td}>₹ {Number(bill.billMakingCharge ?? 0).toLocaleString()}</td>
+                        <td style={td}>₹ {Number(bill.billSGST ?? 0).toLocaleString()}</td>
+                        <td style={td}>₹ {Number(bill.billCGST ?? 0).toLocaleString()}</td>
                         <td style={td}>₹ {Number(bill.billTotalAmount ?? 0).toLocaleString()}</td>
                     </tr>
                     </tbody>
