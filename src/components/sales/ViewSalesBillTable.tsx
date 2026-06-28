@@ -296,7 +296,12 @@ console.log(payAmount);
                             >
                                 Total Amount
                             </TableCell>
-
+                            <TableCell
+                                isHeader
+                                className="px-5 py-3 font-medium text-start text-theme-sm"
+                            >
+                                Grant Total
+                            </TableCell>
                             <TableCell
                                 isHeader
                                 className="px-5 py-3 font-medium text-start text-theme-sm"
@@ -360,35 +365,79 @@ console.log(payAmount);
                                 </TableCell>
                                 <TableCell
                                     className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
-                                    {s.billItemName}
+                                    {s.items?.map((item: any, i: number) => (
+                                        <div key={i}>
+                                            {item.itemName}
+                                        </div>
+                                    ))}
                                 </TableCell>
                                 <TableCell
                                     className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
-                                    {s.billHSNCode}
+                                    {s.items?.map((item: any, i: number) => (
+                                        <div key={i}>
+                                            {item.hsnCode}
+                                        </div>
+                                    ))}
+
                                 </TableCell>
                                 <TableCell
                                     className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
-                                    {s.billWeight}
+                                    {s.items?.map((item: any, i: number) => (
+                                        <div key={i}>
+                                            {item.weight}
+                                        </div>
+                                    ))}
                                 </TableCell>
                                 <TableCell
                                     className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
-                                    {s.billWastage}
+                                    {s.items?.map((item: any, i: number) => (
+                                        <div key={i}>
+                                            ₹{item.wastage}
+                                        </div>
+                                    ))}
                                 </TableCell>
                                 <TableCell
                                     className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
-                                    ₹{s.billRate}
+                                    {s.items?.map((item: any, i: number) => (
+                                        <div key={i}>
+                                            ₹{item.rate}
+                                        </div>
+                                    ))}
                                 </TableCell>
                                 <TableCell
                                     className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
-                                    ₹{s.billMakingCharge}
+                                    {s.items?.map((item: any, i: number) => (
+                                        <div key={i}>
+                                            ₹{item.makingCharge}
+                                        </div>
+                                    ))}
                                 </TableCell>
                                 <TableCell
                                     className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
-                                    ₹{s.billSGST}
+                                    {s.items?.map((item: any, i: number) => (
+                                        <div key={i}>
+                                            ₹{item.sgst}
+                                        </div>
+                                    ))}
+
                                 </TableCell>
                                 <TableCell
                                     className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
-                                    ₹{s.billCGST}
+                                    {s.items?.map((item: any, i: number) => (
+                                        <div key={i}>
+                                            ₹{item.cgst}
+                                        </div>
+                                    ))}
+
+                                </TableCell>
+                                <TableCell
+                                    className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
+                                    {s.items?.map((item: any, i: number) => (
+                                        <div key={i}>
+                                            ₹{item.totalAmount}
+                                        </div>
+                                    ))}
+
                                 </TableCell>
                                 <TableCell
                                     className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
@@ -594,47 +643,89 @@ console.log(payAmount);
                                 </div>
                                 <div>
                                     <Label>Particulars</Label>
-                                    {selectedBill.billItemName}
+                                    {selectedBill.items?.map((item: any, i: number) => (
+                                        <div key={i}>
+                                            {item.itemName}
+                                        </div>
+                                    ))}
+
                                 </div>
                                 <div>
                                     <Label>HSN Code</Label>
-                                    {selectedBill.billHSNCode}
+                                    {selectedBill.items?.map((item: any, i: number) => (
+                                        <div key={i}>
+                                            {item.hsnCode}
+                                        </div>
+                                    ))}
                                 </div>
                                 <div>
                                     <Label>Weight</Label>
-                                    {selectedBill.billWeight}
+                                    {selectedBill.items?.map((item: any, i: number) => (
+                                        <div key={i}>
+                                            {item.weight}
+                                        </div>
+                                    ))}
                                 </div>
                                 <div>
                                     <Label>Wastage</Label>
-                                    {selectedBill.billWastage}
+                                    {selectedBill.items?.map((item: any, i: number) => (
+                                        <div key={i}>
+                                            ₹{item.wastage}
+                                        </div>
+                                    ))}
                                 </div>
                                 <div>
                                     <Label>Rate</Label>
-                                    {selectedBill.billRate}
+                                    {selectedBill.items?.map((item: any, i: number) => (
+                                        <div key={i}>
+                                            ₹{item.rate}
+                                        </div>
+                                    ))}
                                 </div>
                                 <div>
                                     <Label>Making Charge</Label>
-                                    {selectedBill.billMakingCharge}
+                                    {selectedBill.items?.map((item: any, i: number) => (
+                                        <div key={i}>
+                                            ₹{item.makingCharge}
+                                        </div>
+                                    ))}
                                 </div>
                                 <div>
                                     <Label>SGST</Label>
-                                    {selectedBill.billSGST}
+                                    {selectedBill.items?.map((item: any, i: number) => (
+                                        <div key={i}>
+                                            ₹{item.sgst}
+                                        </div>
+                                    ))}
                                 </div>
                                 <div>
                                     <Label>CGST</Label>
-                                    {selectedBill.billCGST}
+                                    {selectedBill.items?.map((item: any, i: number) => (
+                                        <div key={i}>
+                                            ₹{item.cgst}
+                                        </div>
+                                    ))}
                                 </div>
                                 <div>
                                     <Label>Total Amount</Label>
-                                    {selectedBill.billTotalAmount}
+                                    {selectedBill.items?.map((item: any, i: number) => (
+                                        <div key={i}>
+                                            ₹{item.totalAmount}
+                                        </div>
+                                    ))}
+
+                                </div>
+                                <div>
+                                    <Label>Grant Total</Label>
+                                    ₹{selectedBill.billTotalAmount}
                                 </div>
                                 <div>
                                     <Label>Paid Amount</Label>
-                                    {selectedBill.billPaidAmount}
+                                    ₹{selectedBill.billPaidAmount}
                                 </div>
                                 <div>
                                     <Label>Balance</Label>
-                                    {selectedBill.billBalance}
+                                    ₹{selectedBill.billBalance}
                                 </div>
                                 <div>
                                     <Label>Due Date</Label>

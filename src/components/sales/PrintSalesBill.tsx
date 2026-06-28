@@ -9,14 +9,17 @@ interface BillProps {
         billName: string;
         billPhone: string;
         billAddress: string;
-        billItemName: string;
-        billHSNCode: string;
-        billWeight: number;
-        billWastage: number;
-        billRate: number;
-        billMakingCharge: number;
-        billSGST: number;
-        billCGST: number;
+        items: {
+            itemName: string;
+            hsnCode: string;
+            weight: number;
+            wastage: number;
+            rate: number;
+            makingCharge: number;
+            sgst: number;
+            cgst: number;
+            totalAmount?: number;
+        }[];
         billTotalAmount: number;
         billPaidAmount: number;
         billBalance: number;
@@ -93,34 +96,38 @@ const PrintSalesBill = forwardRef<HTMLDivElement, BillProps>(
                     </tr>
                     </thead>
                     <tbody>
-                    <tr>
-                        <td style={td}>{bill.billItemName}</td>
-                        <td style={td}>{bill.billHSNCode}</td>
-                        <td style={td}>{bill.billWeight}</td>
-                        <td style={td}>{bill.billWastage}</td>
-                        <td style={td}>₹ {Number(bill.billRate ?? 0).toLocaleString()}</td>
-                        <td style={td}>₹ {Number(bill.billMakingCharge ?? 0).toLocaleString()}</td>
-                        <td style={td}>₹ {Number(bill.billSGST ?? 0).toLocaleString()}</td>
-                        <td style={td}>₹ {Number(bill.billCGST ?? 0).toLocaleString()}</td>
-                        <td style={td}>₹ {Number(bill.billTotalAmount ?? 0).toLocaleString()}</td>
-                    </tr>
+                    {bill.items?.map((item, index) => (
+                        <tr key={index}>
+                            <td style={td}>{item.itemName}</td>
+                            <td style={td}>{item.hsnCode}</td>
+                            <td style={td}>{item.weight}</td>
+                            <td style={td}>₹{Number(item.wastage ?? 0).toLocaleString()}</td>
+                            <td style={td}>₹{Number(item.rate ?? 0).toLocaleString()}</td>
+                            <td style={td}>₹{Number(item.makingCharge ?? 0).toLocaleString()}</td>
+                            <td style={td}>₹{Number(item.sgst ?? 0).toLocaleString()}</td>
+                            <td style={td}>₹{Number(item.cgst ?? 0).toLocaleString()}</td>
+                            <td style={td}>
+                                ₹{Number(item.totalAmount ?? 0).toLocaleString()}
+                            </td>
+                        </tr>
+                    ))}
                     </tbody>
                 </table>
 
 
                 <div style={amountStyle}>
                     <span>Grand Total</span>
-                    <span>₹ {Number(bill.billTotalAmount ?? 0).toLocaleString()}</span>
+                    <span>₹{Number(bill.billTotalAmount ?? 0).toLocaleString()}</span>
                 </div>
 
                 <div style={amountStyle}>
                     <span>Paid Amount</span>
-                    <span>₹ {Number(bill.billPaidAmount ?? 0).toLocaleString()}</span>
+                    <span>₹{Number(bill.billPaidAmount ?? 0).toLocaleString()}</span>
                 </div>
 
                 <div style={amountStyle}>
                     <span>Balance Amount</span>
-                    <span>₹ {Number(bill.billBalance ?? 0).toLocaleString()}</span>
+                    <span>₹{Number(bill.billBalance ?? 0).toLocaleString()}</span>
                 </div>
 
                 <h3 style={{textAlign: "right", marginTop: "10px"}}>
