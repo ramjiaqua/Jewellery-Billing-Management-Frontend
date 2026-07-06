@@ -6,23 +6,14 @@ import {
     TableRow,
 } from "../ui/table";
 import Badge from "../ui/badge/Badge";
-import {useEffect, useRef, useState} from "react";
+import {useEffect, useState} from "react";
 import api from "../../common/axiosConfig.tsx";
-import {Modal} from "../ui/modal";
-import Label from "../form/Label.tsx";
-import Input from "../form/input/InputField.tsx";
-import Button from "../ui/button/Button.tsx";
-import {useModal} from "../../hooks/useModal.ts";
-import PrintSalesBill from '../sales/PrintSalesBill';
-import {useReactToPrint} from "react-to-print";
 
 export default function ViewChitSubscriptionTable() {
-    const [salesBills, setSalesBills] = useState<any[]>([]);
     const [chitSubscription, setChitSubscription] = useState<any[]>([]);
 
     const [loading, setLoading] = useState(true);
     const [page, setPage] = useState(0);
-    const [size] = useState(10);
     const [totalPages, setTotalPages] = useState(0);
     const [billNumberFilter, setBillNumberFilter] = useState("");
     const [phoneFilter, setPhoneFilter] = useState("");

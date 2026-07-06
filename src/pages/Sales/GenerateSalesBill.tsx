@@ -45,6 +45,98 @@ type Bill = {
 
 export default function GenerateSalesBill() {
 
+    const [errors, setErrors] = useState({
+        billName: "",
+        billPhone: "",
+        billAddress: "",
+        billPaidAmount: "",
+        billItemName: "",
+        billHSNCode: "",
+        billWeight: "",
+        billRate: "",
+        billWastage: "",
+        billMakingCharge: "",
+        billSGST: "",
+        billCGST: "",
+    });
+
+    const validateForm = () => {
+        const newErrors: any = {};
+
+        if (!formData.billName.trim()) {
+            newErrors.billName = "Customer name is required";
+        }
+
+        if (!formData.billPhone.trim()) {
+            newErrors.billPhone = "Phone number is required";
+        } else if (!/^\d{10}$/.test(formData.billPhone)) {
+            newErrors.billPhone = "Enter a valid 10-digit phone number";
+        }
+
+        if (items.length === 0) {
+            alert("Please add at least one item.");
+            return false;
+        }
+
+        setErrors(newErrors);
+
+        return Object.keys(newErrors).length === 0;
+    };
+
+    const validateItemField = () => {
+        const newErrors: any = {};
+
+        if (!formData.billItemName.trim()) {
+            newErrors.billItemName = "Item name is required";
+        }
+
+        if (!formData.billHSNCode.trim()) {
+            newErrors.billHSNCode = "HSN code is required";
+        }
+
+        if (!formData.billWeight.trim()) {
+            newErrors.billWeight = "Weight is required";
+        } else if (Number(formData.billWeight) <= 0) {
+            newErrors.billWeight = "Weight must be greater than 0";
+        }
+
+        if (!formData.billRate.trim()) {
+            newErrors.billRate = "Rate is required";
+        } else if (Number(formData.billRate) <= 0) {
+            newErrors.billRate = "Rate must be greater than 0";
+        }
+
+        if (!formData.billWastage.trim()) {
+            newErrors.billWastage = "Wastage is required";
+        } else if (Number(formData.billWastage) < 0) {
+            newErrors.billWastage = "Invalid amount";
+        }
+
+        if (!formData.billMakingCharge.trim()) {
+            newErrors.billMakingCharge = "Making Charge is required";
+        } else if (Number(formData.billMakingCharge) < 0) {
+            newErrors.billMakingCharge = "Invalid amount";
+        }
+
+        if (!formData.billSGST.trim()) {
+            newErrors.billSGST = "SGST is required";
+        } else if (Number(formData.billMakingCharge) < 0) {
+            newErrors.billSGST = "Invalid amount";
+        }
+        if (!formData.billCGST.trim()) {
+            newErrors.billCGST = "CGST is required";
+        } else if (Number(formData.billCGST) < 0) {
+            newErrors.billCGST = "Invalid amount";
+        }
+
+
+
+
+        setErrors(newErrors);
+
+        return Object.keys(newErrors).length === 0;
+    };
+
     const [formData, setFormData] = useState({
         billName: "",
         billPhone: "",
@@ -67,47 +159,40 @@ export default function GenerateSalesBill() {
     const [loading, setLoading] = useState(false);
     const [bill, setBill] = useState<Bill | null>(null);
     const [items, setItems] = useState<BillItem[]>([]);
- /*   const handleAddItem = () => {
 
-        const totalAmount =
-            Number(formData.billWeight) * Number(formData.billRate) +
-            Number(formData.billMakingCharge || 0) +
-            Number(formData.billWastage || 0) +
-            Number(formData.billSGST || 0) +
-            Number(formData.billCGST || 0);
-
-        const newItem: BillItem = {
-            itemName: formData.billItemName,
-            hsnCode: formData.billHSNCode,
-            weight: Number(formData.billWeight || 0),
-            rate: Number(formData.billRate || 0),
-            wastage: Number(formData.billWastage || 0),
-            makingCharge: Number(formData.billMakingCharge || 0),
-            sgst: Number(formData.billSGST || 0),
-            cgst: Number(formData.billCGST || 0),
-            totalAmount,
-        };
-
-        setItems([...items, newItem]);
-
-        // Clear item fields
-        setFormData({
-            ...formData,
-            billItemName: "",
-            billHSNCode: "",
-            billWeight: "",
-            billRate: "",
-            billWastage: "",
-            billMakingCharge: "",
-            billSGST: "",
-            billCGST: "",
-        });
-    };*/
     const handleChange = (e: any) => {
-        setFormData({
-            ...formData,
-            [e.target.name]: e.target.value
-        });
+        const { name, value } = e.target;
+
+        if (name === "billPhone") {
+            if (!/^\d*$/.test(value)) return; // Allow only digits
+        }
+
+        // Fields that should accept only numbers and decimals
+        const decimalFields = [
+            "billWeight",
+            "billRate",
+            "billWastage",
+            "billMakingCharge",
+            "billSGST",
+            "billCGST",
+            "billPaidAmount",
+        ];
+
+        // Allow only digits and one decimal point
+        if (decimalFields.includes(name)) {
+            if (!/^\d*\.?\d*$/.test(value)) {
+                return;
+            }
+        }
+        setFormData((prev) => ({
+            ...prev,
+            [name]: value,
+        }));
+
+        setErrors((prev) => ({
+            ...prev,
+            [name]: "",
+        }));
     };
 
     const [editIndex, setEditIndex] = useState<number | null>(null);
@@ -146,6 +231,9 @@ export default function GenerateSalesBill() {
     };
 
     const handleAddItem = () => {
+
+        if (!validateItemField()) return;
+
 
         const totalAmount =
             Number(formData.billWeight || 0) *
@@ -244,8 +332,17 @@ export default function GenerateSalesBill() {
         const url = `https://wa.me/91${data.billPhone}?text=${encodeURIComponent(message)}`;
         window.open(url, "_blank");
     };
+    const isGenerateDisabled =
+        loading ||
+        items.length === 0 ||
+        total_amount <= 0 ||
+        !formData.billName.trim() ||
+        !formData.billPhone.trim() ||
+        !formData.billPaymentMode;
 
     const handleGenerateBill = async () => {
+        if (!validateForm()) return;
+
         try {
             setLoading(true);
 
@@ -288,7 +385,17 @@ export default function GenerateSalesBill() {
                 {/* CUSTOMER */}
                 <ComponentCard title="Customer Details">
                     <Input name="billName" value={formData.billName} onChange={handleChange} placeholder="Name"/>
-                    <Input name="billPhone" value={formData.billPhone} onChange={handleChange} placeholder="Phone"/>
+                    {errors.billName && (
+                        <p className="text-red-500 text-sm mt-1">
+                            {errors.billName}
+                        </p>
+                    )}
+                    <Input name="billPhone" value={formData.billPhone} onChange={handleChange} placeholder="Phone" maxLength={10}/>
+                    {errors.billPhone && (
+                        <p className="text-red-500 text-sm mt-1">
+                            {errors.billPhone}
+                        </p>
+                    )}
                     <Input name="billAddress" value={formData.billAddress} onChange={handleChange}
                            placeholder="Address"/>
                 </ComponentCard>
@@ -297,16 +404,56 @@ export default function GenerateSalesBill() {
                 <ComponentCard title="Item Details">
                     <Input name="billItemName" value={formData.billItemName} onChange={handleChange}
                            placeholder="Item Name"/>
+                    {errors.billItemName && (
+                        <p className="text-red-500 text-sm mt-1">
+                            {errors.billItemName}
+                        </p>
+                    )}
                     <Input name="billHSNCode" value={formData.billHSNCode} onChange={handleChange}
                            placeholder="HSN Code"/>
+                    {errors.billHSNCode && (
+                        <p className="text-red-500 text-sm mt-1">
+                            {errors.billHSNCode}
+                        </p>
+                    )}
                     <Input name="billWeight" value={formData.billWeight} onChange={handleChange} placeholder="Weight"/>
+                    {errors.billWeight && (
+                        <p className="text-red-500 text-sm mt-1">
+                            {errors.billWeight}
+                        </p>
+                    )}
                     <Input name="billRate" value={formData.billRate} onChange={handleChange} placeholder="Rate"/>
+                    {errors.billRate && (
+                        <p className="text-red-500 text-sm mt-1">
+                            {errors.billRate}
+                        </p>
+                    )}
                     <Input name="billWastage" value={formData.billWastage} onChange={handleChange}
                            placeholder="Wastage"/>
+                    {errors.billWastage && (
+                        <p className="text-red-500 text-sm mt-1">
+                            {errors.billWastage}
+                        </p>
+                    )}
                     <Input name="billMakingCharge" value={formData.billMakingCharge} onChange={handleChange}
                            placeholder="Making Charge"/>
+                    {errors.billMakingCharge && (
+                        <p className="text-red-500 text-sm mt-1">
+                            {errors.billMakingCharge}
+                        </p>
+                    )}
                     <Input name="billSGST" value={formData.billSGST} onChange={handleChange} placeholder="SGST"/>
+                    {errors.billSGST && (
+                        <p className="text-red-500 text-sm mt-1">
+                            {errors.billSGST}
+                        </p>
+                    )}
                     <Input name="billCGST" value={formData.billCGST} onChange={handleChange} placeholder="CGST"/>
+                    {errors.billCGST && (
+                        <p className="text-red-500 text-sm mt-1">
+                            {errors.billCGST}
+                        </p>
+                    )}
                 </ComponentCard>
                 <div className="flex gap-2">
                     <Button variant="outline" onClick={handleAddItem}>
@@ -413,14 +560,14 @@ export default function GenerateSalesBill() {
 
                     <div>Balance: ₹ {balance_amount}</div>
                 </ComponentCard>
-
+                <div className="flex gap-2">
                 <Button
                     onClick={handleGenerateBill}
-                    disabled={loading}
+                    disabled={isGenerateDisabled}
                 >
                     {loading ? "Generating..." : "Generate Bill & Print"}
                 </Button>
-
+</div>
                 {/* PRINT */}
                 {bill && (
                     <div style={{display: "none"}}>
