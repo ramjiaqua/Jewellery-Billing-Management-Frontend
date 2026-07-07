@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Link, useLocation } from "react-router";
+import {SHOP_NAME} from "../common/constants";
 
 // Assume these icons are imported from an icon library
 import {
@@ -374,23 +375,25 @@ const AppSidebar: React.FC = () => {
           !isExpanded && !isHovered ? "lg:justify-center" : "justify-start"
         }`}
       >
-        <Link to="/">
+        <Link to="/home">
           {isExpanded || isHovered || isMobileOpen ? (
             <>
-              <img
-                className="dark:hidden"
-                src="/images/logo/logo.svg"
-                alt="Logo"
-                width={150}
-                height={40}
-              />
-              <img
-                className="hidden dark:block"
-                src="/images/logo/logo-dark.svg"
-                alt="Logo"
-                width={150}
-                height={40}
-              />
+          {/*  <div className="mx-auto mb-10 w-full max-w-60 rounded-2xl bg-gray-50 px-4 py-5 text-center dark:bg-white/[0.03]">
+                <h2 className="mb-3 text-lg font-bold text-gray-900 dark:text-white">
+                    {SHOP_NAME}
+                </h2>
+            </div>*/}
+                <div className="mx-auto mb-8 w-full max-w-xl rounded-2xl border border-yellow-200 bg-gradient-to-r from-yellow-50 via-white to-yellow-50 p-6 text-center shadow-lg">
+                    <h1 className="text-3xl font-bold tracking-wide text-yellow-700">
+                        {SHOP_NAME}
+                    </h1>
+
+                  {/*  <p className="mt-2 text-sm text-gray-600">
+                        Trusted Gold & Silver Jewellery
+                    </p>*/}
+
+                    <div className="mx-auto mt-4 h-1 w-24 rounded-full bg-yellow-500"></div>
+                </div>
             </>
           ) : (
             <img

@@ -736,6 +736,14 @@ console.log(payAmount);
                                     {selectedBill.billPaymentMode}
                                 </div>
                                 <div>
+                                    <Label>Customer ID</Label>
+                                    {selectedBill.idType}
+                                </div>
+                                <div>
+                                    <Label>Cusomer ID Number</Label>
+                                    {selectedBill.idNumber}
+                                </div>
+                                <div>
                                     <Label>Billed By</Label>
                                     {selectedBill.billBilledBy}
                                 </div>
