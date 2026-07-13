@@ -357,7 +357,7 @@ const AppSidebar: React.FC = () => {
 
   return (
     <aside
-      className={`fixed mt-16 flex flex-col lg:mt-0 top-0 px-5 left-0 bg-white dark:bg-gray-900 dark:border-gray-800 text-gray-900 h-screen transition-all duration-300 ease-in-out z-50 border-r border-gray-200 
+      className={`fixed mt-16 flex flex-col lg:mt-0 top-0 px-5 left-0 bg-gradient-to-b from-yellow-50 via-white to-yellow-100 dark:border-gray-800 text-gray-900 h-screen transition-all duration-300 ease-in-out z-50 border-r border-gray-200 
         ${
           isExpanded || isMobileOpen
             ? "w-[290px]"
@@ -383,21 +383,49 @@ const AppSidebar: React.FC = () => {
                     {SHOP_NAME}
                 </h2>
             </div>*/}
+{/*
                 <div className="mx-auto mb-8 w-full max-w-xl rounded-2xl border border-yellow-200 bg-gradient-to-r from-yellow-50 via-white to-yellow-50 p-6 text-center shadow-lg">
-                    <h1 className="text-3xl font-bold tracking-wide text-yellow-700">
+*/}
+                   {/* <h1 className="text-3xl font-bold tracking-wide text-yellow-700">
                         {SHOP_NAME}
-                    </h1>
+                    </h1>*/}
+                   {/* <div className="flex flex-col items-center">
+                        <img
+                            src="/images/logo/jayalakshmi-logo.png"
+                            className="w-20 h-20 rounded-full shadow-lg"
+                        />
+
+                        <h1 className="mt-3 text-2xl font-bold text-yellow-700">
+                            {SHOP_NAME}
+                        </h1>
+
+                        <p className="text-xs text-gray-500 tracking-widest">
+                            Gold • Silver
+                        </p>
+                    </div>*/}
+                    <div className="rounded-2xl bg-gradient-to-r from-yellow-400 via-yellow-200 to-yellow-500 p-5 shadow-xl border border-yellow-600 text-center">
+
+                        <h1 className="text-2xl font-bold text-gray-900">
+                            {SHOP_NAME}
+                        </h1>
+
+                        <p className="text-sm text-gray-800">
+                            Gold • Silver
+                          {/*  Since 1998*/}
+                        </p>
+
+                    </div>
 
                   {/*  <p className="mt-2 text-sm text-gray-600">
                         Trusted Gold & Silver Jewellery
                     </p>*/}
 
-                    <div className="mx-auto mt-4 h-1 w-24 rounded-full bg-yellow-500"></div>
-                </div>
+              {/*      <div className="mx-auto mt-4 h-1 w-24 rounded-full bg-yellow-500"></div>*/}
+              {/*  </div>*/}
             </>
           ) : (
             <img
-              src="/images/logo/logo-icon.svg"
+              src="/images/logo/logo.jpeg"
               alt="Logo"
               width={32}
               height={32}

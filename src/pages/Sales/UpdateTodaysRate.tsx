@@ -3,7 +3,6 @@ import PageMeta from "../../components/common/PageMeta";
 import Button from "../../components/ui/button/Button";
 import {SHOP_NAME} from "../../common/constants";
 import {useState} from "react";
-import ComponentCard from "../../components/common/ComponentCard";
 import Label from "../../components/form/Label";
 import Input from "../../components/form/input/InputField";
 import api from "../../common/axiosConfig";
@@ -65,37 +64,141 @@ export default function UpdateTodaysRate() {
 
 
     return (
-
-
         <div>
             <PageMeta
                 title={SHOP_NAME}
                 description={SHOP_NAME}
             />
-            <PageBreadcrumb pageTitle="Update Gold & Silver Rate"/>
-            <div className="grid grid-cols-1 gap-6 xl:grid-cols-1">
-                <div className="space-y-6">
-                    <ComponentCard title="Today's Rate">
-                        <div className="space-y-6">
-                            <div>
-                                <Label htmlFor="gold_rate">Gold Rate</Label>
-                                <Input type="text" id="gold_rate" name="goldRate" value={formData.goldRate || ""}
-                                       onChange={handleChange} placeholder="Enter Gold Price Per Gram"/>
-                            </div>
-                            <div>
-                                <Label htmlFor="silver_rate">Silver Rate</Label>
-                                <Input type="text" id="silver_rate" name="silverRate"
-                                       value={formData.silverRate || ""} onChange={handleChange}
-                                       placeholder="Enter Silver Price Per Gram"/>
-                            </div>
-                        </div>
-                    </ComponentCard>
+
+            <PageBreadcrumb pageTitle="Update Gold & Silver Rate" />
+
+            <div
+                className="
+            rounded-3xl
+            border
+            border-yellow-300
+            bg-gradient-to-br
+            from-[#FFFDF7]
+            via-white
+            to-[#FFF8E8]
+            shadow-xl
+            overflow-hidden
+        "
+            >
+                {/* Header */}
+                <div
+                    className="
+                p-6
+                bg-gradient-to-r
+                from-yellow-500
+                via-amber-500
+                to-yellow-600
+            "
+                >
+                    <h2 className="text-3xl font-bold text-white">
+                        💰 Update Today's Rate
+                    </h2>
+
+                    <p className="text-yellow-100 mt-1">
+                        Update Gold & Silver rates for today's billing.
+                    </p>
                 </div>
-                <div>
-                    <Button className="flex items-center gap-5" size="sm" type="button" disabled={loading}
-                            onClick={handleUpdateRate}>
-                        {loading ? "Updating..." : "Update Rate"}
-                    </Button>
+
+                {/* Form */}
+                <div className="p-8">
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+                        <div>
+                            <Label
+                                htmlFor="gold_rate"
+                                className="text-yellow-700 font-semibold"
+                            >
+                                Gold Rate (Per Gram)
+                            </Label>
+
+                            <Input
+                                id="gold_rate"
+                                type="text"
+                                name="goldRate"
+                                value={formData.goldRate}
+                                onChange={handleChange}
+                                placeholder="Enter Gold Price"
+
+                                className="
+                            rounded-xl
+                            border-yellow-300
+                            bg-yellow-50
+                            focus:border-yellow-500
+                            focus:ring-2
+                            focus:ring-yellow-300
+                        "
+                            />
+                        </div>
+
+                        <div>
+                            <Label
+                                htmlFor="silver_rate"
+                                className="text-yellow-700 font-semibold"
+                            >
+                                Silver Rate (Per Gram)
+                            </Label>
+
+                            <Input
+                                id="silver_rate"
+                                type="text"
+                                name="silverRate"
+                                value={formData.silverRate}
+                                onChange={handleChange}
+                                placeholder="Enter Silver Price"
+
+                                className="
+                            rounded-xl
+                            border-yellow-300
+                            bg-yellow-50
+                            focus:border-yellow-500
+                            focus:ring-2
+                            focus:ring-yellow-300
+                        "
+                            />
+                        </div>
+
+                    </div>
+
+                    {/* Button */}
+
+                    <div className="mt-8 flex justify-end">
+
+                        <Button
+                            size="sm"
+                            type="button"
+                            disabled={loading}
+                            onClick={handleUpdateRate}
+                            className="
+                        px-8
+                        py-3
+                        rounded-xl
+                        bg-gradient-to-r
+                        from-yellow-500
+                        to-amber-600
+                        text-white
+                        font-semibold
+                        shadow-lg
+                        hover:shadow-xl
+                        hover:scale-105
+                        transition-all
+                        disabled:opacity-50
+                    "
+                        >
+                            {loading ? (
+                                <>Updating...</>
+                            ) : (
+                                <>💾 Update Rate</>
+                            )}
+                        </Button>
+
+                    </div>
+
                 </div>
             </div>
         </div>

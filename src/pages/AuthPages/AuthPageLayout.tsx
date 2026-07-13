@@ -1,23 +1,47 @@
 import React from "react";
-import ThemeTogglerTwo from "../../components/common/ThemeTogglerTwo";
 
-export default function AuthLayout({ children }: { children: React.ReactNode }) {
+export default function AuthLayout({
+                                       children,
+                                   }: {
+    children: React.ReactNode;
+}) {
     return (
-        <div className="min-h-screen flex flex-col bg-white dark:bg-gray-900 p-6 sm:p-0">
+        <div className="relative min-h-screen overflow-hidden bg-gradient-to-br from-[#FFFDF7] via-[#FFF8E8] to-[#FDE8A8]">
 
-            <div className="flex-1 flex flex-col justify-center lg:flex-row">
-                {children}
-            </div>
+            {/* Decorative Background */}
+           {/* <div className="absolute inset-0 opacity-10">
+                <div className="absolute -top-24 -left-24 h-72 w-72 rounded-full bg-yellow-400 blur-3xl opacity-20"></div>
 
-            {/* Footer */}
-            <footer className="text-sm text-center text-gray-500 dark:text-gray-400 py-4">
-                &copy; {new Date().getFullYear()} - RK Tech Labs. Mob: 9488492321.
-            </footer>
+                <div className="absolute bottom-0 right-0 h-96 w-96 rounded-full bg-amber-400 blur-3xl opacity-20"></div>
+            </div>*/}
 
             {/* Theme Toggle */}
-            <div className="fixed z-50 bottom-6 right-6">
+          {/*  <div className="fixed top-6 right-6 z-50">
                 <ThemeTogglerTwo />
+            </div>*/}
+
+            {/* Login Content */}
+            <div className="relative z-10 flex min-h-screen flex-col">
+
+                <main className="flex flex-1 items-center justify-center px-6 py-4">
+                    {children}
+                </main>
+
+                {/* Footer */}
+                <footer className="border-t border-yellow-300 bg-gradient-to-br
+from-[#FFFDF7]
+via-[#FFF8E8]
+to-[#FDE8A8] /60 backdrop-blur-md py-5 text-center shadow-inner">
+
+                      <p className="mt-2 text-xs text-black-400">
+                        Powered by RK Tech Labs. Mob: 9488492321.
+                    </p>
+
+                </footer>
+
             </div>
         </div>
     );
 }
+
+

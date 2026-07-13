@@ -13,6 +13,7 @@ import Label from "../form/Label.tsx";
 import Input from "../form/input/InputField.tsx";
 import Button from "../ui/button/Button.tsx";
 import Badge from "../ui/badge/Badge.tsx";
+import {SHOP_NAME} from "../../common/constants.tsx";
 
 export default function ViewUsersProfile() {
 
@@ -90,92 +91,127 @@ console.log(response);
 
     return (
         <>
-        <div className="overflow-visible rounded-xl border border-gray-200 bg-white dark:border-white/[0.05] dark:bg-white/[0.03]">
+            <div className="
+rounded-3xl
+border
+border-yellow-300
+bg-gradient-to-br
+from-[#FFFDF7]
+via-white
+to-[#FFF8E8]
+shadow-xl
+overflow-hidden
+">
+                <div className="flex items-center justify-between p-6 border-b border-yellow-200 bg-gradient-to-r from-yellow-500 via-amber-500 to-yellow-600">
 
-                <div className="flex flex-wrap gap-4 p-4">
+                    <div>
+                        <h2 className="text-3xl font-bold text-white">
+                            👥 User Management
+                        </h2>
+
+                        <p className="mt-1 text-yellow-100">
+                            Manage all staff and administrators
+                        </p>
+                    </div>
+
                     <Button
                         onClick={() => {
                             setSelectedUser(emptyUser);
                             setIsEditMode(false);
                             openModal();
                         }}
+                        className="
+ flex
+    items-center
+    gap-2
+    rounded-xl
+    bg-white
+    px-5
+    py-3
+    text-yellow-700
+    font-semibold
+    shadow-lg
+    hover:bg-yellow-100
+    transition-all
+    duration-300
+    "
                     >
-                        Add User
+                        ➕ Add User
                     </Button>
+
                 </div>
 
             <div className="max-w-full overflow-x-auto">
                 <Table>
                     {/* Table Header */}
-                    <TableHeader className="border-b border-gray-100 dark:border-white/[0.05]">
+                    <TableHeader className="bg-gradient-to-r from-yellow-500 to-amber-600">
                         <TableRow>
-                            <TableCell
+                            <TableCell className="px-5 py-4 text-white text-start font-semibold uppercase tracking-wider"
                                 isHeader
-                                className="px-5 py-4 sm:px-6 text-start text-theme-sm"
                             >
                                 Id
                             </TableCell>
                             <TableCell
                                 isHeader
-                                className="px-5 py-4 sm:px-6 text-start text-theme-sm"
+                                className="px-5 py-4 text-white text-start font-semibold uppercase tracking-wider"
                             >
                                 User Name
                             </TableCell>
                             <TableCell
                                 isHeader
-                                className="px-5 py-4 sm:px-6 text-start text-theme-sm"
+                                className="px-5 py-4 text-white text-start font-semibold uppercase tracking-wider"
                             >
                                 Name
                             </TableCell>
                             <TableCell
                                 isHeader
-                                className="px-5 py-3 font-medium text-start text-theme-sm"
+                                className="px-5 py-4 text-white text-start font-semibold uppercase tracking-wider"
                             >
                                 Address
                             </TableCell>
                             <TableCell
                                 isHeader
-                                className="px-5 py-3 font-medium text-start text-theme-sm"
+                                className="px-5 py-4 text-white text-start font-semibold uppercase tracking-wider"
                             >
                                 Phone Number
                             </TableCell>
                             <TableCell
                                 isHeader
-                                className="px-5 py-3 font-medium text-start text-theme-sm"
+                                className="px-5 py-4 text-white text-start font-semibold uppercase tracking-wider"
                             >
                                 Email Id
                             </TableCell>
 
                             <TableCell
                                 isHeader
-                                className="px-5 py-3 font-medium text-start text-theme-sm"
+                                className="px-5 py-4 text-white text-start font-semibold uppercase tracking-wider"
                             >
                                 Role
                             </TableCell>
 
                             <TableCell
                                 isHeader
-                                className="px-5 py-3 font-medium text-start text-theme-sm"
+                                className="px-5 py-4 text-white text-start font-semibold uppercase tracking-wider"
                             >
                                 Status
                             </TableCell>
                             <TableCell
                                 isHeader
-                                className="px-5 py-3 font-medium text-start text-theme-sm"
+                                className="px-5 py-4 text-white text-start font-semibold uppercase tracking-wider"
                             >
                                 Service Start Date
                             </TableCell>
 
                             <TableCell
                                 isHeader
-                                className="px-5 py-3 font-medium text-start text-theme-sm"
+                                className="px-5 py-4 text-white text-start font-semibold uppercase tracking-wider"
                             >
                                 Service End Date
                             </TableCell>
 
                             <TableCell
                                 isHeader
-                                className="px-5 py-3 font-medium text-start text-theme-sm"
+                                className="px-5 py-4 text-white text-start font-semibold uppercase tracking-wider"
                             >
                                 Referred By
                             </TableCell>
@@ -188,37 +224,37 @@ console.log(response);
 
                     <TableBody className="divide-y divide-gray-100 dark:divide-white/[0.05]">
                         {users.map((user) => (
-                            <TableRow key={user.id}>
+                            <TableRow className="hover:bg-yellow-50 transition-all duration-200 "key={user.id}>
                                 <TableCell
-                                    className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-40">
+                                    className="px-4 py-3 text-gray-700 font-medium text-start text-theme-sm dark:text-gray-40">
                                     {user.id}
                                 </TableCell>
                                 <TableCell
-                                    className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-40">
+                                    className="px-4 py-3 text-gray-700 font-medium text-start text-theme-sm dark:text-gray-40">
                                     {user.username}
                                 </TableCell>
                                 <TableCell
-                                    className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-40">
+                                    className="px-4 py-3 text-gray-700 font-medium text-start text-theme-sm dark:text-gray-40">
                                     {user.fullname}
                                 </TableCell>
                                 <TableCell
-                                    className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
+                                    className="px-4 py-3 text-gray-700 font-medium text-start text-theme-sm dark:text-gray-400">
                                     {user.address}
                                 </TableCell>
                                 <TableCell
-                                    className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
+                                    className="px-4 py-3 text-gray-700 font-medium text-start text-theme-sm dark:text-gray-400">
                                     {user.phonenumber}
                                 </TableCell>
                                 <TableCell
-                                    className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
+                                    className="px-4 py-3 text-gray-700 font-medium text-start text-theme-sm dark:text-gray-400">
                                     {user.emailid}
                                 </TableCell>
                                 <TableCell
-                                    className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
+                                    className="px-4 py-3 text-gray-700 font-medium text-start text-theme-sm dark:text-gray-400">
                                     {user.role}
                                 </TableCell>
                                 <TableCell
-                                    className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
+                                    className="px-4 py-3 text-gray-700 font-medium text-start text-theme-sm dark:text-gray-400">
 
                                     <Badge
                                         size="sm"
@@ -262,8 +298,23 @@ console.log(response);
                                         setIsEditMode(true);
                                         openModal();
                                     }}
-                                    className="flex w-full items-center justify-center gap-2 rounded-full border border-gray-300 bg-white px-4 py-3 text-sm font-medium text-gray-700 shadow-theme-xs hover:bg-gray-50 hover:text-gray-800 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/[0.03] dark:hover:text-gray-200 lg:inline-flex lg:w-auto"
-                                >
+                                    className="
+inline-flex
+items-center
+gap-2
+rounded-xl
+bg-gradient-to-r
+from-yellow-500
+to-amber-600
+px-4
+py-2
+text-white
+font-semibold
+shadow-md
+hover:shadow-xl
+hover:scale-105
+transition-all
+"                                >
                                     <svg
                                         className="fill-current"
                                         width="18"
@@ -297,13 +348,26 @@ console.log(response);
         </div>
 
     <Modal isOpen={isOpen} onClose={closeModal} className="max-w-[700px] m-4">
-        <div className="relative w-full p-4 overflow-y-auto bg-white no-scrollbar rounded-3xl dark:bg-gray-900 lg:p-11">
+        <div className="
+rounded-3xl
+border
+border-yellow-300
+bg-gradient-to-br
+from-white
+via-yellow-50
+to-yellow-100
+shadow-2xl
+">
             <div className="px-2 pr-14">
-                <h4 className="mb-2 text-2xl font-semibold text-gray-800 dark:text-white/90">
-                    {isEditMode ? "Update User Profile" : "Add New User"}
-                </h4>
-                <p className="mb-6 text-sm text-gray-500 dark:text-gray-400 lg:mb-7">
-                    Update User details to keep your profile up-to-date.
+                <h2 className="text-3xl font-bold text-yellow-700">
+
+                    👤 {isEditMode ? "Update User" : "Create User"}
+
+                </h2>
+                <p className="text-gray-600 mt-2">
+
+                    {SHOP_NAME} Staff Management
+
                 </p>
             </div>
             <form className="flex flex-col">
@@ -311,8 +375,14 @@ console.log(response);
                     <div className="grid grid-cols-1 gap-x-6 gap-y-5 lg:grid-cols-2">
 
                         <div>
-                            <Label>Full Name</Label>
-                            <Input
+                            <Label className="font-semibold text-yellow-700">Full Name</Label>
+                            <Input className="
+rounded-xl
+border-yellow-300
+bg-yellow-50
+focus:border-yellow-500
+focus:ring-yellow-300
+"
                                 type="text"
                                 value={selectedUser.fullname || ""}
                                 onChange={(e) =>
@@ -325,8 +395,14 @@ console.log(response);
                         </div>
 
                         <div>
-                            <Label>Username</Label>
-                            <Input
+                            <Label className="font-semibold text-yellow-700">Username</Label>
+                            <Input className="
+rounded-xl
+border-yellow-300
+bg-yellow-50
+focus:border-yellow-500
+focus:ring-yellow-300
+"
                                 type="text"
                                 value={selectedUser.username || ""}
                                 onChange={(e) =>
@@ -338,8 +414,14 @@ console.log(response);
                             />
                         </div>
                         <div>
-                            <Label>Password</Label>
-                            <Input
+                            <Label className="font-semibold text-yellow-700">Password</Label>
+                            <Input className="
+rounded-xl
+border-yellow-300
+bg-yellow-50
+focus:border-yellow-500
+focus:ring-yellow-300
+"
                                 type="password"
                                 value={selectedUser.password || ""}
                                 onChange={(e) =>
@@ -351,8 +433,14 @@ console.log(response);
                             />
                         </div>
                         <div>
-                            <Label>Address</Label>
-                            <Input
+                            <Label className="font-semibold text-yellow-700">Address</Label>
+                            <Input className="
+rounded-xl
+border-yellow-300
+bg-yellow-50
+focus:border-yellow-500
+focus:ring-yellow-300
+"
                                 type="text"
                                 value={selectedUser.address || ""}
                                 onChange={(e) =>
@@ -365,8 +453,14 @@ console.log(response);
                         </div>
 
                         <div>
-                            <Label>Phone Number</Label>
-                            <Input
+                            <Label className="font-semibold text-yellow-700">Phone Number</Label>
+                            <Input className="
+rounded-xl
+border-yellow-300
+bg-yellow-50
+focus:border-yellow-500
+focus:ring-yellow-300
+"
                                 type="text"
                                 value={selectedUser.phonenumber || ""}
                                 onChange={(e) =>
@@ -379,8 +473,14 @@ console.log(response);
                         </div>
 
                         <div>
-                            <Label>Email</Label>
-                            <Input
+                            <Label className="font-semibold text-yellow-700">Email</Label>
+                            <Input className="
+rounded-xl
+border-yellow-300
+bg-yellow-50
+focus:border-yellow-500
+focus:ring-yellow-300
+"
                                 type="email"
                                 value={selectedUser.emailid || ""}
                                 onChange={(e) =>
@@ -393,7 +493,7 @@ console.log(response);
                         </div>
 
                         <div>
-                            <Label>Role</Label>
+                            <Label className="font-semibold text-yellow-700">Role</Label>
                          {/*   <Input
                                 type="text"
                                 value={selectedUser.role || ""}
@@ -412,7 +512,18 @@ console.log(response);
                                         role: e.target.value
                                     })
                                 }
-                                className="h-11 w-full rounded-lg border border-gray-300 px-4 py-2"
+                                className="
+h-11
+w-full
+rounded-xl
+border
+border-yellow-300
+bg-yellow-50
+px-4
+focus:border-yellow-500
+focus:ring-2
+focus:ring-yellow-300
+"
                             >
                                 <option value="">Select Role</option>
 
@@ -425,7 +536,7 @@ console.log(response);
                         </div>
 
                         <div>
-                            <Label>Status</Label>
+                            <Label className="font-semibold text-yellow-700">Status</Label>
 
                             <select
                                 value={selectedUser.status || ""}
@@ -435,7 +546,18 @@ console.log(response);
                                         status: e.target.value
                                     })
                                 }
-                                className="h-11 w-full rounded-lg border border-gray-300 px-4 py-2"
+                                className="
+h-11
+w-full
+rounded-xl
+border
+border-yellow-300
+bg-yellow-50
+px-4
+focus:border-yellow-500
+focus:ring-2
+focus:ring-yellow-300
+"
                             >
                                 <option value="">Select Status</option>
 
@@ -448,8 +570,14 @@ console.log(response);
                         </div>
 
                         <div>
-                            <Label>Referred By</Label>
-                            <Input
+                            <Label className="font-semibold text-yellow-700">Referred By</Label>
+                            <Input className="
+rounded-xl
+border-yellow-300
+bg-yellow-50
+focus:border-yellow-500
+focus:ring-yellow-300
+"
                                 type="test"
                                 value={selectedUser.referredby || ""}
                                 onChange={(e) =>
@@ -466,14 +594,29 @@ console.log(response);
 
                 <div className="flex items-center gap-3 px-2 mt-6 lg:justify-end">
                     <Button
-                        size="sm"
                         variant="outline"
+                        className="
+border-yellow-400
+text-yellow-700
+hover:bg-yellow-100
+"
+
+                        size="sm"
                         onClick={closeModal}
                     >
                         Close
                     </Button>
 
                     <Button
+                        className="
+bg-gradient-to-r
+from-yellow-500
+to-amber-600
+text-white
+shadow-lg
+hover:shadow-xl
+"
+
                         size="sm"
                         onClick={handleSave}
                     >

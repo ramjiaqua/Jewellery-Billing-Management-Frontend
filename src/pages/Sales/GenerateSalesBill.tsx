@@ -1,4 +1,3 @@
-    import PageBreadcrumb from "../../components/common/PageBreadCrumb";
     import PageMeta from "../../components/common/PageMeta";
     import Button from "../../components/ui/button/Button";
     import {SHOP_NAME} from "../../common/constants";
@@ -432,101 +431,160 @@
         };
 
         return (
-            <div>
+            <div className="
+min-h-screen
+bg-gradient-to-b
+from-[#FFFDF7]
+via-[#FFF8E6]
+to-[#FFF2CC]
+">
                 <PageMeta title={SHOP_NAME} description={SHOP_NAME}/>
+{/*
                 <PageBreadcrumb pageTitle="Generate Sales Bill"/>
+*/}
+
+                <div className="mb-8 rounded-3xl bg-gradient-to-r from-yellow-500 via-yellow-400 to-amber-600 p-8 shadow-xl">
+                    <h2 className="text-3xl font-bold text-white">
+                        📋 Generate Bill
+                    </h2>
+
+                    <p className="text-yellow-100 mt-1">
+                        Generate & Print Bill
+                    </p>
+                </div>
 
                 <div className="grid grid-cols-1 gap-6 xl:grid-cols-1">
 
+                 <div className="
+                    rounded-3xl
+                    border
+                    border-yellow-300
+                    bg-gradient-to-br
+                    from-yellow-50
+                    via-white
+                    to-yellow-100
+                    shadow-lg
+                    p-6
+                    ">
+
                     {/* CUSTOMER */}
-                    <ComponentCard title="Customer Details">
-                        <Input name="billName" value={formData.billName} onChange={handleChange} placeholder="Name"/>
+                    <ComponentCard title="👤 Customer Details">
+                        <Input className="rounded-xl border-yellow-300 focus:border-yellow-500 focus:ring-yellow-400 bg-white" name="billName" value={formData.billName} onChange={handleChange} placeholder="Name"/>
                         {errors.billName && (
                             <p className="text-red-500 text-sm mt-1">
                                 {errors.billName}
                             </p>
                         )}
-                        <Input name="billPhone" value={formData.billPhone} onChange={handleChange} placeholder="Phone" maxLength={10}/>
+                        <Input className="rounded-xl border-yellow-300 focus:border-yellow-500 focus:ring-yellow-400 bg-white" name="billPhone" value={formData.billPhone} onChange={handleChange} placeholder="Phone" maxLength={10}/>
                         {errors.billPhone && (
                             <p className="text-red-500 text-sm mt-1">
                                 {errors.billPhone}
                             </p>
                         )}
-                        <Input name="billAddress" value={formData.billAddress} onChange={handleChange}
+                        <Input className="rounded-xl border-yellow-300 focus:border-yellow-500 focus:ring-yellow-400 bg-white" name="billAddress" value={formData.billAddress} onChange={handleChange}
                                placeholder="Address"/>
                     </ComponentCard>
+                 </div>
+                {/* ITEM */}
+                    <div className="
+                    rounded-3xl
+                    border
+                    border-yellow-300
+                    bg-gradient-to-br
+                    from-yellow-50
+                    via-white
+                    to-yellow-100
+                    shadow-lg
+                    p-6
+                    ">
 
-                    {/* ITEM */}
-                    <ComponentCard title="Item Details">
-                        <Input name="billItemName" value={formData.billItemName} onChange={handleChange}
+                    <ComponentCard title="💍 Jewellery Details">
+                        <Input className="rounded-xl border-yellow-300 focus:border-yellow-500 focus:ring-yellow-400 bg-white" name="billItemName" value={formData.billItemName} onChange={handleChange}
                                placeholder="Item Name"/>
                         {errors.billItemName && (
                             <p className="text-red-500 text-sm mt-1">
                                 {errors.billItemName}
                             </p>
                         )}
-                        <Input name="billHSNCode" value={formData.billHSNCode} onChange={handleChange}
+                        <Input className="rounded-xl border-yellow-300 focus:border-yellow-500 focus:ring-yellow-400 bg-white" name="billHSNCode" value={formData.billHSNCode} onChange={handleChange}
                                placeholder="HSN Code"/>
                         {errors.billHSNCode && (
                             <p className="text-red-500 text-sm mt-1">
                                 {errors.billHSNCode}
                             </p>
                         )}
-                        <Input name="billWeight" value={formData.billWeight} onChange={handleChange} placeholder="Weight"/>
+                        <Input className="rounded-xl border-yellow-300 focus:border-yellow-500 focus:ring-yellow-400 bg-white" name="billWeight" value={formData.billWeight} onChange={handleChange} placeholder="Weight"/>
                         {errors.billWeight && (
                             <p className="text-red-500 text-sm mt-1">
                                 {errors.billWeight}
                             </p>
                         )}
-                        <Input name="billRate" value={formData.billRate} onChange={handleChange} placeholder="Rate"/>
+                        <Input className="rounded-xl border-yellow-300 focus:border-yellow-500 focus:ring-yellow-400 bg-white" name="billRate" value={formData.billRate} onChange={handleChange} placeholder="Rate"/>
                         {errors.billRate && (
                             <p className="text-red-500 text-sm mt-1">
                                 {errors.billRate}
                             </p>
                         )}
-                        <Input name="billWastage" value={formData.billWastage} onChange={handleChange}
+                        <Input className="rounded-xl border-yellow-300 focus:border-yellow-500 focus:ring-yellow-400 bg-white" name="billWastage" value={formData.billWastage} onChange={handleChange}
                                placeholder="Wastage"/>
                         {errors.billWastage && (
                             <p className="text-red-500 text-sm mt-1">
                                 {errors.billWastage}
                             </p>
                         )}
-                        <Input name="billMakingCharge" value={formData.billMakingCharge} onChange={handleChange}
+                        <Input className="rounded-xl border-yellow-300 focus:border-yellow-500 focus:ring-yellow-400 bg-white" name="billMakingCharge" value={formData.billMakingCharge} onChange={handleChange}
                                placeholder="Making Charge"/>
                         {errors.billMakingCharge && (
                             <p className="text-red-500 text-sm mt-1">
                                 {errors.billMakingCharge}
                             </p>
                         )}
-                        <Input name="billSGST" value={formData.billSGST} onChange={handleChange} placeholder="SGST"/>
+                        <Input className="rounded-xl border-yellow-300 focus:border-yellow-500 focus:ring-yellow-400 bg-white" name="billSGST" value={formData.billSGST} onChange={handleChange} placeholder="SGST"/>
                         {errors.billSGST && (
                             <p className="text-red-500 text-sm mt-1">
                                 {errors.billSGST}
                             </p>
                         )}
-                        <Input name="billCGST" value={formData.billCGST} onChange={handleChange} placeholder="CGST"/>
+                        <Input className="rounded-xl border-yellow-300 focus:border-yellow-500 focus:ring-yellow-400 bg-white" name="billCGST" value={formData.billCGST} onChange={handleChange} placeholder="CGST"/>
                         {errors.billCGST && (
                             <p className="text-red-500 text-sm mt-1">
                                 {errors.billCGST}
                             </p>
                         )}
                     </ComponentCard>
+                    </div>
                     <div className="flex gap-2">
-                        <Button variant="outline" onClick={handleAddItem}>
+                        <Button className="rounded-xl bg-gradient-to-r from-yellow-500 to-amber-600 text-white shadow-lg hover:scale-105 transition-all" variant="outline" onClick={handleAddItem}>
                             {editIndex !== null ? "Update Item" : "+ Add Item"}
                         </Button>
 
                         {editIndex !== null && (
-                            <Button variant="primary" onClick={handleCancelEdit}>
+                            <Button className="rounded-xl bg-gradient-to-r from-yellow-500 to-amber-600 text-white shadow-lg hover:scale-105 transition-all" variant="primary" onClick={handleCancelEdit}>
                                 Cancel
                             </Button>
                         )}
                     </div>
                    {/* <div className="mt-4">*/}
-                        <ComponentCard title="All Purchased Items">
+                    <div className="
+                    rounded-3xl
+                    border
+                    border-yellow-300
+                    bg-gradient-to-br
+                    from-yellow-50
+                    via-white
+                    to-yellow-100
+                    shadow-lg
+                    p-6
+                    ">
+
+                    <ComponentCard title="📋 Purchased Jewellery">
                            <div className="max-w-full overflow-x-auto">
                                 <Table>
-                                    <TableHeader className="border-b border-gray-100 dark:border-white/[0.05]">
+                                    <TableHeader className="
+bg-gradient-to-r
+from-yellow-600
+to-yellow-500
+text-white">
                                         <TableRow>
                                             <TableCell isHeader className="px-5 py-4 sm:px-6 text-start text-theme-sm">#</TableCell>
                                             <TableCell isHeader className="px-5 py-4 sm:px-6 text-start text-theme-sm">Item</TableCell>
@@ -542,7 +600,7 @@
                                         </TableRow>
                                     </TableHeader>
 
-                                    <TableBody className="divide-y divide-gray-100 dark:divide-white/[0.05]">
+                                    <TableBody className="hover:bg-yellow-50 odd:bg-white even:bg-yellow-50 divide-y divide-gray-100 dark:divide-white/[0.05]">
                                         {items.map((item, index) => (
                                             <TableRow
                                                 key={index}
@@ -572,7 +630,7 @@
                                                 </TableCell>
                                                 <TableCell>
                                                     <div className="flex gap-2">
-                                                        <Button
+                                                        <Button className="rounded-xl bg-gradient-to-r from-yellow-500 to-amber-600 text-white shadow-lg hover:scale-105 transition-all"
                                                             size="sm"
                                                             variant="outline"
                                                             onClick={() => handleEditItem(index)}
@@ -580,7 +638,7 @@
                                                             Edit
                                                         </Button>
 
-                                                        <Button
+                                                        <Button className="rounded-xl bg-gradient-to-r from-yellow-500 to-amber-600 text-white shadow-lg hover:scale-105 transition-all"
                                                             size="sm"
                                                             variant="primary"
                                                             onClick={() => handleDeleteItem(index)}
@@ -594,16 +652,59 @@
                                     </TableBody>
                                 </Table>
                             </div>
-                            <div>Grand Total: ₹ {total_amount}</div>
+                          {/*  <div>Grand Total: ₹ {total_amount}</div>*/}
+                        <div className="
+mt-6
+rounded-2xl
+bg-gradient-to-r
+from-yellow-500
+to-amber-600
+p-6
+text-white
+shadow-xl
+">
+
+                            <h2 className="text-lg">
+                                Grand Total
+                            </h2>
+
+                            <h1 className="text-4xl font-bold">
+                                ₹ {total_amount.toLocaleString()}
+                            </h1>
+
+                        </div>
+
                         </ComponentCard>
-                   {/* </div>*/}
+
+                   </div>
 
                     {/* PAYMENT */}
-                    <ComponentCard title="Payment Details">
+                    <div className="
+                    rounded-3xl
+                    border
+                    border-yellow-300
+                    bg-gradient-to-br
+                    from-yellow-50
+                    via-white
+                    to-yellow-100
+                    shadow-lg
+                    p-6
+                    ">
+
+                    <ComponentCard title="💰 Payment Details">
 
                         {isIdMandatory && (
                             <>
+{/*
                                 <div className="mb-3 rounded-md border border-red-300 bg-red-50 p-3">
+*/}
+                                    <div className="
+rounded-xl
+border-l-4
+border-red-600
+bg-red-50
+p-5
+">
                                     <p className="text-red-600 font-medium">
                                         Transactions above ₹2,00,000 require a valid PAN or Aadhaar number.
                                     </p>
@@ -647,23 +748,46 @@
 
 
 
-                        <Select
+                        <Select className="rounded-xl border-yellow-300 focus:border-yellow-500 focus:ring-yellow-400 bg-white"
                             options={options}
                             onChange={handleSelectChange}
                             placeholder="Payment Mode"
                         />
 
-                        <Input
+                        <Input className="rounded-xl border-yellow-300 focus:border-yellow-500 focus:ring-yellow-400 bg-white"
                             name="billPaidAmount"
                             value={formData.billPaidAmount}
                             onChange={handleChange}
                             placeholder="Paid Amount"
                         />
 
-                        <div>Balance: ₹ {balance_amount}</div>
+
+                        <div className="
+mt-6
+rounded-2xl
+bg-gradient-to-r
+from-yellow-500
+to-amber-600
+p-6
+text-white
+shadow-xl
+">
+
+                            <h2 className="text-lg">
+                                Balance
+                            </h2>
+
+                            <h1 className="text-4xl font-bold">
+                                ₹ {balance_amount.toLocaleString()}
+                            </h1>
+
+                        </div>
+
+
                     </ComponentCard>
+                    </div>
                     <div className="flex gap-2">
-                    <Button
+                    <Button className="rounded-xl bg-gradient-to-r from-yellow-500 to-amber-600 text-white shadow-lg hover:scale-105 transition-all"
                         onClick={handleGenerateBill}
                         disabled={isGenerateDisabled}
                     >
