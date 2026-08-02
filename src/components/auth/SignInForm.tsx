@@ -21,8 +21,6 @@ export default function SignInForm() {
             return;
         }
         try {
-            console.log("Inside handle login");
-            console.log(user);
             setLoading(true);
             const response = await api.post(
                 "/api/auth/login",
@@ -54,9 +52,8 @@ export default function SignInForm() {
     };
 
     return (
-        <div
-            className="min-h-screen  flex flex-col items-center justify-center px-6">
-            <div className="flex justify-center mb-4">
+        <div className="flex flex-col items-center justify-start  px-6 py-2">
+            <div className="flex justify-center mb-2">
                 <img
                     src="/images/logo/logo.jpeg"
                     className="h-24 w-24 rounded-full border-4 border-yellow-400 shadow-xl"
@@ -130,22 +127,7 @@ export default function SignInForm() {
                                     size="sm" type="submit" disabled={loading}>
                                     💍 {loading ? "Authenticating..." : "Sign In"}
                                 </Button>
-
-
-                             {/*   <div className="mt-8 text-center">
-
-                                    <p className="text-sm text-gray-500">
-                                        ✨ Success Through Dedication ✨
-                                    </p>
-
-                                    <p className="mt-2 text-xs text-gray-400">
-                                        © 2026 {SHOP_NAME}
-                                    </p>
-
-                                </div>*/}
-
-
-                            </div>
+                             </div>
                         </div>
                     </form>
                 </div>
