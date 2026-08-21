@@ -26,6 +26,8 @@ import ViewUsersProfile from "./pages/Users/ViewUsers";
 import ViewChitCustomers from "./pages/Chit/ViewChitCustomers";
 import ViewChitScheme from "./pages/Chit/ViewChitScheme";
 import ViewChitSubscription from "./pages/Chit/ViewChitSubscription";
+import UnderConstruction from "./pages/OtherPage/UnderConstruction";
+
 
 
 
@@ -105,6 +107,13 @@ export default function App() {
             <Route path="/view-chit-subscription" element={
               <ProtectedRoute>
                 <ViewChitSubscription />
+              </ProtectedRoute>
+            }
+            />
+
+            <Route path="/under-construction" element={
+              <ProtectedRoute>
+                <UnderConstruction />
               </ProtectedRoute>
             }
             />

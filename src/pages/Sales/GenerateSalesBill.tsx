@@ -7,6 +7,7 @@
     import Select from "../../components/form/Select";
     import api from "../../common/axiosConfig";
     import {useReactToPrint} from "react-to-print";
+    import { useNavigate } from "react-router-dom";
     import PrintSalesBill from "../../components/sales/PrintSalesBill";
     import {
         Table,
@@ -21,7 +22,10 @@
         hsnCode: string;
         weight: number;
         rate: number;
+        // Wastage percentage entered by user
         wastage: number;
+        // Wastage amount automatically calculated
+        wastageAmount: number;
         makingCharge: number;
         sgst: number;
         cgst: number;
@@ -40,6 +44,8 @@
         billBalanceDue: string;
         billPaymentMode: string;
         items: BillItem[];
+        idType: string;
+        idNumber: string;
     };
 
     export default function GenerateSalesBill() {
@@ -60,7 +66,8 @@
             idType: "",
             idNumber: "",
         });
-
+        const fullName = localStorage.getItem("fullname");
+        const navigate = useNavigate();
         const validateForm = () => {
             const newErrors: any = {};
 
@@ -135,9 +142,12 @@
             }
 
             if (!formData.billWastage.trim()) {
-                newErrors.billWastage = "Wastage is required";
-            } else if (Number(formData.billWastage) < 0) {
-                newErrors.billWastage = "Invalid amount";
+                newErrors.billWastage = "Wastage percentage is required";
+            } else if (
+                Number(formData.billWastage) < 0 ||
+                Number(formData.billWastage) > 100
+            ) {
+                newErrors.billWastage = "Wastage must be between 0% and 100%";
             }
 
             if (!formData.billMakingCharge.trim()) {
@@ -146,7 +156,7 @@
                 newErrors.billMakingCharge = "Invalid amount";
             }
 
-            if (!formData.billSGST.trim()) {
+           /* if (!formData.billSGST.trim()) {
                 newErrors.billSGST = "SGST is required";
             } else if (Number(formData.billMakingCharge) < 0) {
                 newErrors.billSGST = "Invalid amount";
@@ -155,7 +165,7 @@
                 newErrors.billCGST = "CGST is required";
             } else if (Number(formData.billCGST) < 0) {
                 newErrors.billCGST = "Invalid amount";
-            }
+            }*/
 
 
 
@@ -265,14 +275,32 @@
 
             if (!validateItemField()) return;
 
+            const weight = Number(formData.billWeight || 0);
+            const rate = Number(formData.billRate || 0);
+            const wastagePercent = Number(formData.billWastage || 0);
+            const makingCharge = Number(formData.billMakingCharge || 0);
+            // Gold value = Weight × Rate
+             const value = weight * rate;
+            // Wastage amount = Gold Value × Wastage %
+            const wastageAmount = value * wastagePercent / 100;
 
-            const totalAmount =
+            const taxableAmount = value + wastageAmount + makingCharge;
+
+          /*  const taxableAmount =
                 Number(formData.billWeight || 0) *
                 Number(formData.billRate || 0) +
                 Number(formData.billMakingCharge || 0) +
-                Number(formData.billWastage || 0) +
+                Number(formData.billWastage || 0)*/
+             /*   +
                 Number(formData.billSGST || 0) +
-                Number(formData.billCGST || 0);
+                Number(formData.billCGST || 0);*/
+
+            // SGST 1.5% of taxable amount
+             const sgst = taxableAmount * 0.015;
+            // CGST 1.5% of taxable amount
+             const cgst = taxableAmount * 0.015;
+            // Final item total including SGST + CGST
+             const totalAmount = taxableAmount + sgst + cgst;
 
             const newItem: BillItem = {
                 itemName: formData.billItemName,
@@ -280,10 +308,13 @@
                 weight: Number(formData.billWeight || 0),
                 rate: Number(formData.billRate || 0),
                 wastage: Number(formData.billWastage || 0),
+                // Store calculated wastage amount
+                wastageAmount: Number(wastageAmount.toFixed(2)),
                 makingCharge: Number(formData.billMakingCharge || 0),
-                sgst: Number(formData.billSGST || 0),
-                cgst: Number(formData.billCGST || 0),
-                totalAmount,
+                // Automatically calculated
+                 sgst: Number(sgst.toFixed(2)),
+                 cgst: Number(cgst.toFixed(2)),
+                 totalAmount: Number(totalAmount.toFixed(2)),
             };
 
             if (editIndex !== null) {
@@ -329,8 +360,12 @@
             0
         );
 
-        const balance_amount =
-            total_amount - Number(formData.billPaidAmount || 0);
+        const paidAmount = Number(formData.billPaidAmount || 0);
+
+        const balance_amount = Math.max(
+            0,
+            total_amount - paidAmount
+        );
         useEffect(() => {
             if (total_amount <= ID_REQUIRED_LIMIT) {
                 setFormData((prev) => ({
@@ -367,7 +402,10 @@
         const printRef = useRef<HTMLDivElement>(null);
 
         const handlePrint = useReactToPrint({
-            contentRef: printRef
+            contentRef: printRef,
+            onAfterPrint: () => {
+                navigate("/home", { replace: true });
+            },
         });
 
         const sendWhatsApp = (data: any) => {
@@ -391,7 +429,8 @@
             !formData.billPhone.trim() ||
             !formData.billPaymentMode ||
             (isIdMandatory && (!formData.idType || !formData.idNumber.trim())) ||
-            Number(formData.billPaidAmount) <= 0;
+            Number(formData.billPaidAmount || 0) < 0 ||
+            Number(formData.billPaidAmount || 0) > total_amount;
 
         const handleGenerateBill = async () => {
             if (!validateForm()) return;
@@ -407,7 +446,7 @@
                     idNumber: formData.idNumber,
                     billPaymentMode: formData.billPaymentMode,
                     billPaidAmount: Number(formData.billPaidAmount || 0),
-                    billBilledBy: "Admin",
+                    billBilledBy: fullName,
                     billTotalAmount: total_amount,
                     billBalance: balance_amount,
                     items: items
@@ -513,7 +552,7 @@ to-[#FFF2CC]
                                 {errors.billHSNCode}
                             </p>
                         )}
-                        <Input className="rounded-xl border-yellow-300 focus:border-yellow-500 focus:ring-yellow-400 bg-white" name="billWeight" value={formData.billWeight} onChange={handleChange} placeholder="Weight"/>
+                        <Input className="rounded-xl border-yellow-300 focus:border-yellow-500 focus:ring-yellow-400 bg-white" name="billWeight" value={formData.billWeight} onChange={handleChange} placeholder="Weight (Gram)"/>
                         {errors.billWeight && (
                             <p className="text-red-500 text-sm mt-1">
                                 {errors.billWeight}
@@ -526,7 +565,10 @@ to-[#FFF2CC]
                             </p>
                         )}
                         <Input className="rounded-xl border-yellow-300 focus:border-yellow-500 focus:ring-yellow-400 bg-white" name="billWastage" value={formData.billWastage} onChange={handleChange}
-                               placeholder="Wastage"/>
+                               placeholder="Wastage (%)"/>
+                        <span className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500">
+        %
+    </span>
                         {errors.billWastage && (
                             <p className="text-red-500 text-sm mt-1">
                                 {errors.billWastage}
@@ -539,7 +581,7 @@ to-[#FFF2CC]
                                 {errors.billMakingCharge}
                             </p>
                         )}
-                        <Input className="rounded-xl border-yellow-300 focus:border-yellow-500 focus:ring-yellow-400 bg-white" name="billSGST" value={formData.billSGST} onChange={handleChange} placeholder="SGST"/>
+                      {/*  <Input className="rounded-xl border-yellow-300 focus:border-yellow-500 focus:ring-yellow-400 bg-white" name="billSGST" value={formData.billSGST} onChange={handleChange} placeholder="SGST"/>
                         {errors.billSGST && (
                             <p className="text-red-500 text-sm mt-1">
                                 {errors.billSGST}
@@ -550,7 +592,7 @@ to-[#FFF2CC]
                             <p className="text-red-500 text-sm mt-1">
                                 {errors.billCGST}
                             </p>
-                        )}
+                        )}*/}
                     </ComponentCard>
                     </div>
                     <div className="flex gap-2">
@@ -589,12 +631,12 @@ text-white">
                                             <TableCell isHeader className="px-5 py-4 sm:px-6 text-start text-theme-sm">#</TableCell>
                                             <TableCell isHeader className="px-5 py-4 sm:px-6 text-start text-theme-sm">Item</TableCell>
                                             <TableCell isHeader className="px-5 py-4 sm:px-6 text-start text-theme-sm">HCN Code</TableCell>
-                                            <TableCell isHeader className="px-5 py-4 sm:px-6 text-start text-theme-sm">Weight</TableCell>
+                                            <TableCell isHeader className="px-5 py-4 sm:px-6 text-start text-theme-sm">Weight (Gram)</TableCell>
                                             <TableCell isHeader className="px-5 py-4 sm:px-6 text-start text-theme-sm">Rate</TableCell>
-                                            <TableCell isHeader className="px-5 py-4 sm:px-6 text-start text-theme-sm">Wastage</TableCell>
+                                            <TableCell isHeader className="px-5 py-4 sm:px-6 text-start text-theme-sm">Wastage (Gram)</TableCell>
                                             <TableCell isHeader className="px-5 py-4 sm:px-6 text-start text-theme-sm">Making Charge</TableCell>
-                                            <TableCell isHeader className="px-5 py-4 sm:px-6 text-start text-theme-sm">SGST</TableCell>
-                                            <TableCell isHeader className="px-5 py-4 sm:px-6 text-start text-theme-sm">CGST</TableCell>
+                                            <TableCell isHeader className="px-5 py-4 sm:px-6 text-start text-theme-sm">SGST (1.5%)</TableCell>
+                                            <TableCell isHeader className="px-5 py-4 sm:px-6 text-start text-theme-sm">CGST (1.5%)</TableCell>
                                             <TableCell isHeader className="px-5 py-4 sm:px-6 text-start text-theme-sm">Total</TableCell>
                                             <TableCell isHeader>Action</TableCell>
                                         </TableRow>

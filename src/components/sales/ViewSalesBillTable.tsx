@@ -237,111 +237,6 @@ overflow-hidden
                     </div>
                 </div>
 
-{/*
-                <div className="p-6 bg-white border-b border-yellow-100">
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 items-end">
-                        <input
-                            type="text"
-                            placeholder="Search Bill Number"
-                            value={billNumberFilter}
-                            onChange={(e) => {
-                                setPage(0);
-                                setBillNumberFilter(e.target.value);
-                            }}
-                            className="rounded-xl border border-yellow-300 bg-yellow-50 px-4 py-2 focus:border-yellow-500focus:ring-2 focus:ring-yellow-300"
-                        />
-
-                        <input
-                            type="text"
-                            placeholder="Search Phone Number"
-                            value={phoneFilter}
-                            onChange={(e) => {
-                                setPage(0);
-                                setPhoneFilter(e.target.value);
-                            }}
-                            className="rounded-xl border border-yellow-300 bg-yellow-50 px-4 py-2 focus:border-yellow-500 focus:ring-2 focus:ring-yellow-300"
-                        />
-
-
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-
-                            <div className="col-span-2">
-                                <div className="grid grid-cols-2 gap-3">
-                                    <label>From</label>
-
-                                    <input
-                                        type="date"
-                                        value={
-                                            fromDate
-                                                ? fromDate.split("-").reverse().join("-")
-                                                : ""
-                                        }
-                                        onChange={(e) => {
-                                            setPage(0);
-
-                                            const value = e.target.value;
-
-                                            if (value) {
-                                                const [year, month, day] = value.split("-");
-                                                setFromDate(`${day}-${month}-${year}`);
-                                            } else {
-                                                setFromDate("");
-                                            }
-                                        }}
-                                        className="rounded-xl border border-yellow-300 bg-yellow-50 px-4 py-2 focus:border-yellow-500 focus:ring-2 focus:ring-yellow-300"
-                                    />
-                                </div>
-
-                                <div className="flex items-center gap-2">
-                                    <label>To</label>
-
-                                    <input
-                                        type="date"
-                                        value={
-                                            toDate
-                                                ? toDate.split("-").reverse().join("-")
-                                                : ""
-                                        }
-                                        onChange={(e) => {
-                                            setPage(0);
-
-                                            const value = e.target.value;
-
-                                            if (value) {
-                                                const [year, month, day] = value.split("-");
-                                                setToDate(`${day}-${month}-${year}`);
-                                            } else {
-                                                setToDate("");
-                                            }
-                                        }}
-                                        className="rounded-xl border border-yellow-300 bg-yellow-50 px-4 py-2 focus:border-yellow-500 focus:ring-2 focus:ring-yellow-300"
-                                    />
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="flex items-center h-11">
-                            <label className="flex items-center gap-3 font-medium text-yellow-700">
-
-                                <input className="h-5 w-5 accent-yellow-500"
-                                       type="checkbox"
-                                       checked={pendingOnly}
-                                       onChange={(e) => {
-                                           setPage(0);
-                                           setPendingOnly(e.target.checked);
-                                       }}
-                                />
-                                Pending Balance Only
-                            </label>
-                        </div>
-                    </div>
-                </div>
-*/}
-
-
-
-
-
                 <div className="max-w-full overflow-x-auto">
                     <Table>
                         {/* Table Header */}
@@ -869,7 +764,7 @@ p-8
                                     <Label className="text-yellow-700 font-semibold">Date</Label>
                                     <p className="mt-1 font-medium text-gray-700">{selectedBill.billDate}</p>
                                 </div>
-                                <div>
+                                <div className="rounded-xl bg-white border border-yellow-200 p-4 shadow-sm">
                                     <Label className="text-yellow-700 font-semibold">Name</Label>
                                     <p className="mt-1 font-medium text-gray-700">{selectedBill.billName}</p>
                                 </div>

@@ -51,9 +51,9 @@ const navItems: NavItem[] = [
             icon: <GridIcon />,
             name: "Purchase",
             subItems: [
-              { name: "New Item", path: "/", pro: false },
-              { name: "Old Item", path: "/", pro: false },
-              { name: "Balance Due", path: "/", pro: false }
+              { name: "New Item", path: "/under-construction", pro: false },
+              { name: "Old Item", path: "/under-construction", pro: false },
+              { name: "Balance Due", path: "/under-construction", pro: false }
             ],
           }]
           : []
@@ -61,12 +61,15 @@ const navItems: NavItem[] = [
  {
     name: "Chit Scheme",
     icon: <ListIcon />,
-    subItems: [{ name: "Customers", path: "/view-chit-customers", pro: false },
-               { name: "Chit Schemes", path: "/view-chit-scheme", pro: false },
-               { name: "Subscriptions", path: "/view-chit-subscription", pro: false }
+    subItems: [{ name: "Customers", path: "/under-construction", pro: false },
+               { name: "Chit Schemes", path: "/under-construction", pro: false },
+               { name: "Subscriptions", path: "/under-construction", pro: false }
     ],
   },
-
+  /*  subItems: [{ name: "Customers", path: "/view-chit-customers", pro: false },
+    { name: "Chit Schemes", path: "/view-chit-scheme", pro: false },
+    { name: "Subscriptions", path: "/view-chit-subscription", pro: false }
+]*/
   ...( ["ADMIN", "STAFF"].includes(userRole)
           ? [{
             icon: <GridIcon />,
@@ -122,7 +125,7 @@ const othersItems: NavItem[] = [
           ? [
             {
               name: "Sales Chart",
-              path: "/line-chart",
+              path: "/under-construction",
               pro: false,
             }
           ]
@@ -131,13 +134,13 @@ const othersItems: NavItem[] = [
           ? [
             {
               name: "Purchase Chart",
-              path: "/line-chart",
+              path: "/under-construction",
               pro: false,
             }
           ]
           : []),
 
-      /*{ name: "Sales Chart", path: "/line-chart", pro: false },
+      /* /line-chart{ name: "Sales Chart", path: "/line-chart", pro: false },
       { name: "Purchase Chart", path: "/line-chart", pro: false },*/
       { name: "Gold/Silver Rate Chart", path: "/bar-chart", pro: false },
     ],
