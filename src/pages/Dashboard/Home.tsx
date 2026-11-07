@@ -1,34 +1,27 @@
 import EcommerceMetrics from "../../components/ecommerce/EcommerceMetrics";
 import PageMeta from "../../components/common/PageMeta";
-import {SHOP_NAME} from "../../common/constants";
+import { SHOP_NAME } from "../../common/constants";
 
 export default function Home() {
-  return (
-     <div className="
-  min-h-screen
-  bg-gradient-to-b
-  from-[#FFFDF7]
-  via-[#FFF9EC]
-  to-[#FFF3D2]
-  ">
-        <>
-        <PageMeta
-           title={SHOP_NAME}
-           description={SHOP_NAME}
-        />
-        <div className="grid grid-cols-12 gap-4 md:gap-6">
-          <div className="col-span-12 space-y-6 xl:col-span-8">
-            <EcommerceMetrics />
+    return (
+        <div className="min-h-screen bg-slate-50">
+            <PageMeta
+                title={SHOP_NAME}
+                description={SHOP_NAME}
+            />
 
-           {/* <MonthlySalesChart />*/}
-        </div>
+            <div className="grid grid-cols-12 gap-4 md:gap-6">
+                <div className="col-span-12 space-y-6 xl:col-span-8">
+                    <EcommerceMetrics />
 
-      {/*  <div className="col-span-12 xl:col-span-5">
+                    {/* <MonthlySalesChart /> */}
+                </div>
+
+                {/* <div className="col-span-12 xl:col-span-5">
           <MonthlyTarget />
-        </div>*/}
+        </div> */}
 
-
-{/*
+                {/*
         <div className="col-span-12">
           <StatisticsChart />
         </div>
@@ -39,10 +32,9 @@ export default function Home() {
 
         <div className="col-span-12 xl:col-span-7">
           <RecentOrders />
-        </div>*/}
-      </div>
-    </>
-
-      </div>
-  );
+        </div>
+        */}
+            </div>
+        </div>
+    );
 }

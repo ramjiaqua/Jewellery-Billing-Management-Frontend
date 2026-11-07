@@ -6,80 +6,211 @@ import {
     TableRow,
 } from "../ui/table";
 import Badge from "../ui/badge/Badge";
-import {useEffect, useRef, useState} from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import api from "../../common/axiosConfig.tsx";
-import {Modal} from "../ui/modal";
+import { Modal } from "../ui/modal";
 import Label from "../form/Label.tsx";
 import Input from "../form/input/InputField.tsx";
 import Button from "../ui/button/Button.tsx";
-import {useModal} from "../../hooks/useModal.ts";
-import PrintSalesBill from './PrintSalesBill';
-import {useReactToPrint} from "react-to-print";
+import { useModal } from "../../hooks/useModal.ts";
+import PrintSalesBill from "./PrintSalesBill";
+import { useReactToPrint } from "react-to-print";
+
+// =========================================================
+// TYPES
+// =========================================================
+
+type BillItem = {
+    id?: number;
+    itemName: string;
+    hsnCode: string;
+    quantity: number;
+    rate: number;
+    sgst: number;
+    cgst: number;
+    totalAmount: number;
+};
+
+type SalesBill = {
+    id: number;
+    billNumber: string;
+    billDate: string;
+    billName: string;
+    billPhone: string;
+    billAddress: string;
+    billTotalAmount: number;
+    billPaidAmount: number;
+    billBalance: number;
+    billBalanceDue: string;
+    billPaymentMode: string;
+    billBilledBy?: string;
+    items: BillItem[];
+    idType?: string;
+    idNumber?: string;
+};
+
+type BillResponse = {
+    content: SalesBill[];
+    totalPages: number;
+    totalElements?: number;
+    number?: number;
+    size?: number;
+};
+
+type PaymentMode = "Cash" | "Card" | "UPI";
+
+const PAYMENT_METHODS: PaymentMode[] = [
+    "Cash",
+    "Card",
+    "UPI",
+];
+
+// =========================================================
+// HELPERS
+// =========================================================
+
+const formatAmount = (amount: number | string | null | undefined) => {
+    return Number(amount || 0).toLocaleString("en-IN", {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+    });
+};
+
+const parseDate = (dateStr?: string) => {
+    if (!dateStr) {
+        return new Date(0);
+    }
+
+    const parts = dateStr.split("-");
+
+    if (parts.length !== 3) {
+        return new Date(0);
+    }
+
+    const [day, month, year] = parts.map(Number);
+
+    if (
+        !day ||
+        !month ||
+        !year ||
+        month < 1 ||
+        month > 12 ||
+        day < 1 ||
+        day > 31
+    ) {
+        return new Date(0);
+    }
+
+    return new Date(year, month - 1, day);
+};
+
+const getTodayWithoutTime = () => {
+    const today = new Date();
+
+    today.setHours(0, 0, 0, 0);
+
+    return today;
+};
+
+const isBillOverdue = (
+    balance: number,
+    dueDate?: string
+) => {
+    if (balance <= 0 || !dueDate) {
+        return false;
+    }
+
+    const parsedDueDate = parseDate(dueDate);
+
+    if (parsedDueDate.getTime() === 0) {
+        return false;
+    }
+
+    parsedDueDate.setHours(0, 0, 0, 0);
+
+    return parsedDueDate < getTodayWithoutTime();
+};
+
+// =========================================================
+// COMPONENT
+// =========================================================
 
 export default function ViewSalesBillTable() {
-    const [salesBills, setSalesBills] = useState<any[]>([]);
+
+    // =========================================================
+    // STATE
+    // =========================================================
+
+    const [salesBills, setSalesBills] = useState<SalesBill[]>([]);
     const [loading, setLoading] = useState(true);
+
     const [page, setPage] = useState(0);
     const [size] = useState(10);
     const [totalPages, setTotalPages] = useState(0);
-    const [billNumberFilter, setBillNumberFilter] = useState("");
-    const [phoneFilter, setPhoneFilter] = useState("");
-    const [pendingOnly, setPendingOnly] = useState(false);
-    const [fromDate, setFromDate] = useState("");
-    const [toDate, setToDate] = useState("");
-    const paymentMethod = ["Cash", "Card", "UPI"];
-    const {isOpen: isPayModalOpen, openModal: openPayModal, closeModal: closePayModal,} = useModal();
-    const {isOpen: isViewModalOpen, openModal: openViewModal, closeModal: closeViewModal,} = useModal();
-    const [isEditMode, setIsEditMode] = useState(false);
-    const [selectedBill, setSelectedBill] = useState<any>({});
-    const [payAmount, setPayAmount] = useState("");
+
+    const [billNumberFilter, setBillNumberFilter] =
+        useState("");
+
+    const [phoneFilter, setPhoneFilter] =
+        useState("");
+
+    const [pendingOnly, setPendingOnly] =
+        useState(false);
+
+    const [fromDate, setFromDate] =
+        useState("");
+
+    const [toDate, setToDate] =
+        useState("");
+
+    const [selectedBill, setSelectedBill] =
+        useState<SalesBill | null>(null);
+
+    const [payAmount, setPayAmount] =
+        useState("");
+
+    const [paymentMode, setPaymentMode] =
+        useState<PaymentMode | "">("");
+
+    const [isSavingPayment, setIsSavingPayment] =
+        useState(false);
+
+    // =========================================================
+    // MODALS
+    // =========================================================
+
+    const {
+        isOpen: isPayModalOpen,
+        openModal: openPayModal,
+        closeModal: closePayModal,
+    } = useModal();
+
+    const {
+        isOpen: isViewModalOpen,
+        openModal: openViewModal,
+        closeModal: closeViewModal,
+    } = useModal();
+
+    // =========================================================
+    // PRINT
+    // =========================================================
+
     const printRef = useRef<HTMLDivElement>(null);
+
     const handleRePrint = useReactToPrint({
-        contentRef: printRef
+        contentRef: printRef,
     });
 
-    const parseDate = (dateStr: string) => {
-        if (!dateStr) return new Date(0);
+    // =========================================================
+    // FETCH BILLS
+    // =========================================================
 
-        // assume DD-MM-YYYY
-        const [day, month, year] = dateStr.split("-");
-        return new Date(`${year}-${month}-${day}`);
-    };
-
-    useEffect(() => {
-        void fetchViewBills();
-    }, [
-        page,
-        billNumberFilter,
-        phoneFilter,
-        pendingOnly, fromDate, toDate
-    ]);
-
-
-    const handleSave = async () => {
+    const fetchViewBills = useCallback(async () => {
         try {
-            console.log(selectedBill.id);
-            console.log(payAmount);
-            if (isEditMode) {
-                await api.post(
-                    `/api/balance/pay-balance/${selectedBill.id}`,
-                    {
-                        payAmount,
-                        paymentMode: selectedBill.billPaymentMode
-                    }
-                );
-            }
-            await fetchViewBills();
-            closePayModal();
-        } catch (error) {
-            console.error(error);
-        }
-    };
+            setLoading(true);
 
-
-    const fetchViewBills = async () => {
-        try {
-            const response = await api.get("/api/bills",
+            const response = await api.get<BillResponse>(
+                "/api/bills",
                 {
                     params: {
                         page,
@@ -88,848 +219,2402 @@ export default function ViewSalesBillTable() {
                         phone: phoneFilter,
                         pendingOnly,
                         fromDate,
-                        toDate
-                    }
-                });
+                        toDate,
+                    },
+                }
+            );
 
-            console.log(response);
-            setSalesBills(response.data.content);
-            setTotalPages(response.data.totalPages);
+            setSalesBills(
+                response.data?.content || []
+            );
+
+            setTotalPages(
+                response.data?.totalPages || 0
+            );
+
         } catch (error) {
-            console.error("Error fetching Bills:", error);
+
+            console.error(
+                "Error fetching Bills:",
+                error
+            );
+
+            setSalesBills([]);
+            setTotalPages(0);
+
         } finally {
+
             setLoading(false);
+        }
+    }, [
+        page,
+        size,
+        billNumberFilter,
+        phoneFilter,
+        pendingOnly,
+        fromDate,
+        toDate,
+    ]);
+
+    useEffect(() => {
+        void fetchViewBills();
+    }, [fetchViewBills]);
+
+    // =========================================================
+    // FILTER HANDLERS
+    // =========================================================
+
+    const handleBillNumberChange = (
+        value: string
+    ) => {
+        setPage(0);
+        setBillNumberFilter(value);
+    };
+
+    const handlePhoneChange = (
+        value: string
+    ) => {
+        setPage(0);
+        setPhoneFilter(value);
+    };
+
+    const handlePendingChange = (
+        checked: boolean
+    ) => {
+        setPage(0);
+        setPendingOnly(checked);
+    };
+
+    const handleFromDateChange = (
+        e: React.ChangeEvent<HTMLInputElement>
+    ) => {
+
+        setPage(0);
+
+        const value = e.target.value;
+
+        if (!value) {
+            setFromDate("");
+            return;
+        }
+
+        const [
+            year,
+            month,
+            day,
+        ] = value.split("-");
+
+        setFromDate(
+            `${day}-${month}-${year}`
+        );
+    };
+
+    const handleToDateChange = (
+        e: React.ChangeEvent<HTMLInputElement>
+    ) => {
+
+        setPage(0);
+
+        const value = e.target.value;
+
+        if (!value) {
+            setToDate("");
+            return;
+        }
+
+        const [
+            year,
+            month,
+            day,
+        ] = value.split("-");
+
+        setToDate(
+            `${day}-${month}-${year}`
+        );
+    };
+
+    // =========================================================
+    // OPEN PAYMENT MODAL
+    // =========================================================
+
+    const handleOpenPayModal = (
+        bill: SalesBill
+    ) => {
+
+        setSelectedBill(bill);
+
+        setPayAmount("");
+
+        setPaymentMode(
+            (bill.billPaymentMode as PaymentMode) || ""
+        );
+
+        openPayModal();
+    };
+
+    // =========================================================
+    // CLOSE PAYMENT MODAL
+    // =========================================================
+
+    const handleClosePayModal = () => {
+
+        if (isSavingPayment) {
+            return;
+        }
+
+        setPayAmount("");
+        setPaymentMode("");
+        closePayModal();
+    };
+
+    // =========================================================
+    // OPEN VIEW MODAL
+    // =========================================================
+
+    const handleOpenViewModal = (
+        bill: SalesBill
+    ) => {
+
+        setSelectedBill(bill);
+
+        openViewModal();
+    };
+
+    // =========================================================
+    // CLOSE VIEW MODAL
+    // =========================================================
+
+    const handleCloseViewModal = () => {
+        closeViewModal();
+    };
+
+    // =========================================================
+    // SAVE PAYMENT
+    // =========================================================
+
+    const handleSavePayment = async () => {
+
+        if (!selectedBill) {
+            return;
+        }
+
+        const amount = Number(payAmount);
+
+        const balance = Number(
+            selectedBill.billBalance || 0
+        );
+
+        // -----------------------------------------------------
+        // Validate Amount
+        // -----------------------------------------------------
+
+        if (
+            !Number.isFinite(amount) ||
+            amount <= 0
+        ) {
+            alert(
+                "Please enter a valid payment amount."
+            );
+            return;
+        }
+
+        // -----------------------------------------------------
+        // Validate Balance
+        // -----------------------------------------------------
+
+        if (amount > balance) {
+
+            alert(
+                `Payment amount cannot exceed the pending balance of ₹${formatAmount(
+                    balance
+                )}.`
+            );
+
+            return;
+        }
+
+        // -----------------------------------------------------
+        // Validate Payment Mode
+        // -----------------------------------------------------
+
+        if (!paymentMode) {
+
+            alert(
+                "Please select a payment mode."
+            );
+
+            return;
+        }
+
+        try {
+
+            setIsSavingPayment(true);
+
+            await api.post(
+                `/api/balance/pay-balance/${selectedBill.id}`,
+                {
+                    payAmount: amount,
+                    paymentMode,
+                }
+            );
+
+            setPayAmount("");
+            setPaymentMode("");
+
+            closePayModal();
+
+            await fetchViewBills();
+
+        } catch (error) {
+
+            console.error(
+                "Error updating payment:",
+                error
+            );
+
+            alert(
+                "Unable to update the payment. Please try again."
+            );
+
+        } finally {
+
+            setIsSavingPayment(false);
         }
     };
 
+    // =========================================================
+    // RE-PRINT
+    // =========================================================
+
+    const handlePrintBill = () => {
+
+        closeViewModal();
+
+        window.setTimeout(() => {
+            handleRePrint();
+        }, 300);
+    };
+
+    // =========================================================
+    // LOADING
+    // =========================================================
+
     if (loading) {
+
         return (
-            <div className="p-4 text-gray-500">
-{/*
-                Loading bills...
-*/}
-                <div className="flex justify-center py-16">
-                    <div className="animate-spin h-10 w-10 rounded-full border-4 border-yellow-500 border-t-transparent"></div>
+            <div className="min-h-screen bg-slate-50">
+
+                <div className="flex min-h-[300px] items-center justify-center">
+
+                    <div
+                        className="
+                        h-10
+                        w-10
+                        animate-spin
+                        rounded-full
+                        border-4
+                        border-slate-200
+                        border-t-blue-600
+                        "
+                    />
+
                 </div>
+
             </div>
         );
     }
 
+    // =========================================================
+    // MAIN UI
+    // =========================================================
+
     return (
         <>
-            <div
-                className="
-rounded-3xl
-border
-border-yellow-300
-bg-gradient-to-br
-from-[#FFFDF7]
-via-white
-to-[#FFF8E8]
-shadow-xl
-overflow-hidden
-"
-            >
-                <div
-                    className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-5 p-6 border-b border-yellow-200 bg-gradient-to-r from-yellow-500 via-amber-500 to-yellow-600">
+                <div className="min-h-screen bg-slate-50">
+                <div className="mx-auto max-w-full space-y-6">
 
-                    <div>
-                        <h2 className="text-3xl font-bold text-white">
-                            📋 Sales Bills
-                        </h2>
+                    {/* =================================================
+                        PAGE HEADER
+                    ================================================== */}
 
-                        <p className="text-yellow-100 mt-1">
-                            Search, View, Print & Manage Customer Bills
-                        </p>
-                    </div>
+                    <div
+                        className="
+                        rounded-xl
+                        border
+                        border-slate-200
+                        bg-white
+                        px-6
+                        py-5
+                        shadow-sm
+                        "
+                    >
 
-                </div>
+                        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
 
-                <div className="p-6 bg-white border-b border-yellow-100">
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 items-end">
+                            <div className="flex items-start gap-4">
 
-                        {/* Bill Number */}
-                        <div>
-                            <Label>Bill Number</Label>
-                            <input
-                                type="text"
-                                placeholder="Search Bill Number"
-                                value={billNumberFilter}
-                                onChange={(e) => {
-                                    setPage(0);
-                                    setBillNumberFilter(e.target.value);
-                                }}
-                                className="w-full rounded-xl border border-yellow-300 bg-yellow-50 px-4 py-2 focus:border-yellow-500 focus:ring-2 focus:ring-yellow-300"
-                            />
-                        </div>
+                                {/* Icon */}
 
-                        {/* Phone Number */}
-                        <div>
-                            <Label>Phone Number</Label>
-                            <input
-                                type="text"
-                                placeholder="Search Phone Number"
-                                value={phoneFilter}
-                                onChange={(e) => {
-                                    setPage(0);
-                                    setPhoneFilter(e.target.value);
-                                }}
-                                className="w-full rounded-xl border border-yellow-300 bg-yellow-50 px-4 py-2 focus:border-yellow-500 focus:ring-2 focus:ring-yellow-300"
-                            />
-                        </div>
-
-                        {/* From Date */}
-                        <div>
-                            <Label>From Date</Label>
-                            <input
-                                type="date"
-                                value={fromDate ? fromDate.split("-").reverse().join("-") : ""}
-                                onChange={(e) => {
-                                    setPage(0);
-                                    const value = e.target.value;
-                                    if (value) {
-                                        const [year, month, day] = value.split("-");
-                                        setFromDate(`${day}-${month}-${year}`);
-                                    } else {
-                                        setFromDate("");
-                                    }
-                                }}
-                                className="w-full rounded-xl border border-yellow-300 bg-yellow-50 px-4 py-2 focus:border-yellow-500 focus:ring-2 focus:ring-yellow-300"
-                            />
-                        </div>
-
-                        {/* To Date */}
-                        <div>
-                            <Label>To Date</Label>
-                            <input
-                                type="date"
-                                value={toDate ? toDate.split("-").reverse().join("-") : ""}
-                                onChange={(e) => {
-                                    setPage(0);
-                                    const value = e.target.value;
-                                    if (value) {
-                                        const [year, month, day] = value.split("-");
-                                        setToDate(`${day}-${month}-${year}`);
-                                    } else {
-                                        setToDate("");
-                                    }
-                                }}
-                                className="w-full rounded-xl border border-yellow-300 bg-yellow-50 px-4 py-2 focus:border-yellow-500 focus:ring-2 focus:ring-yellow-300"
-                            />
-                        </div>
-
-                        {/* Pending Only */}
-                        <div className="col-span-full mt-3">
-                            <label className="flex items-center gap-3 font-medium text-yellow-700">
-                                <input
-                                    className="h-5 w-5 accent-yellow-500"
-                                    type="checkbox"
-                                    checked={pendingOnly}
-                                    onChange={(e) => {
-                                        setPage(0);
-                                        setPendingOnly(e.target.checked);
-                                    }}
-                                />
-                                Pending Balance Only
-                            </label>
-                        </div>
-
-                    </div>
-                </div>
-
-                <div className="max-w-full overflow-x-auto">
-                    <Table>
-                        {/* Table Header */}
-                        <TableHeader className="bg-gradient-to-r from-yellow-500 to-amber-600">
-                            <TableRow>
-                                <TableCell
-                                    isHeader
-                                    className="px-5 py-4 text-white font-semibold uppercase tracking-wider"
-                                >
-                                    Bill Number
-                                </TableCell>
-                                <TableCell
-                                    isHeader
-                                    className="px-5 py-4 text-white font-semibold uppercase tracking-wider"
-                                >
-                                    Date
-                                </TableCell>
-                                <TableCell
-                                    isHeader
-                                    className="px-5 py-4 text-white font-semibold uppercase tracking-wider"
-                                >
-                                    Name
-                                </TableCell>
-
-                                <TableCell
-                                    isHeader
-                                    className="px-5 py-4 text-white font-semibold uppercase tracking-wider"
-                                >
-                                    Phone Number
-                                </TableCell>
-                                <TableCell
-                                    isHeader
-                                    className="px-5 py-4 text-white font-semibold uppercase tracking-wider"
-                                >
-                                    Particulars
-                                </TableCell>
-                                <TableCell
-                                    isHeader
-                                    className="px-5 py-4 text-white font-semibold uppercase tracking-wider"
-                                >
-                                    HSN Code
-                                </TableCell>
-                                <TableCell
-                                    isHeader
-                                    className="px-5 py-4 text-white font-semibold uppercase tracking-wider"
-                                >
-                                    Weight
-                                </TableCell>
-                                <TableCell
-                                    isHeader
-                                    className="px-5 py-4 text-white font-semibold uppercase tracking-wider"
-                                >
-                                    Wastage
-                                </TableCell>
-                                <TableCell
-                                    isHeader
-                                    className="px-5 py-4 text-white font-semibold uppercase tracking-wider"
-                                >
-                                    Rate
-                                </TableCell>
-
-                                <TableCell
-                                    isHeader
-                                    className="px-5 py-4 text-white font-semibold uppercase tracking-wider"
-                                >
-                                    Making Charge
-                                </TableCell>
-                                <TableCell
-                                    isHeader
-                                    className="px-5 py-4 text-white font-semibold uppercase tracking-wider"
-                                >
-                                    SGST
-                                </TableCell>
-                                <TableCell
-                                    isHeader
-                                    className="px-5 py-4 text-white font-semibold uppercase tracking-wider"
-                                >
-                                    CGST
-                                </TableCell>
-
-                                <TableCell
-                                    isHeader
-                                    className="px-5 py-4 text-white font-semibold uppercase tracking-wider"
-                                >
-                                    Total Amount
-                                </TableCell>
-                                <TableCell
-                                    isHeader
-                                    className="px-5 py-4 text-white font-semibold uppercase tracking-wider"
-                                >
-                                    Grand Total
-                                </TableCell>
-                                <TableCell
-                                    isHeader
-                                    className="px-5 py-4 text-white font-semibold uppercase tracking-wider"
-                                >
-                                    Paid Amount
-                                </TableCell>
-                                <TableCell
-                                    isHeader
-                                    className="px-5 py-4 text-white font-semibold uppercase tracking-wider"
-                                >
-                                    Balance
-                                </TableCell>
-                                <TableCell
-                                    isHeader
-                                    className="px-5 py-4 text-white font-semibold uppercase tracking-wider"
-                                >
-                                    Due Date
-                                </TableCell>
-                                <TableCell
-                                    isHeader
-                                    className="px-5 py-4 text-white font-semibold uppercase tracking-wider"
-                                >
-                                    Payment Mode
-                                </TableCell>
-                                <TableCell
-                                    isHeader
-                                    className="px-5 py-4 text-white font-semibold uppercase tracking-wider"
-                                >
-                                    Billed By
-                                </TableCell>
-                            </TableRow>
-                        </TableHeader>
-
-                        <TableBody className="divide-y divide-gray-100 dark:divide-white/[0.05]">
-                            {salesBills.map((s) => (
-                                <TableRow
-                                    key={s.id}
+                                <div
                                     className="
-cursor-pointer
-hover:bg-yellow-50
-transition-all
-duration-200
-"
-                                    onClick={() => {
-                                        setSelectedBill(s);
-
-                                        openViewModal();
-                                    }}
+                                    flex
+                                    h-10
+                                    w-10
+                                    shrink-0
+                                    items-center
+                                    justify-center
+                                    rounded-lg
+                                    bg-blue-50
+                                    text-blue-600
+                                    "
                                 >
-                                    <TableCell
-                                        className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-40">
-                                        {s.billNumber}
-                                    </TableCell>
-                                    <TableCell
-                                        className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
-                                        {s.billDate}
-                                    </TableCell>
-                                    <TableCell
-                                        className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
-                                        {s.billName}
-                                    </TableCell>
 
-                                    <TableCell
-                                        className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
-                                        {s.billPhone}
-                                    </TableCell>
-                                    <TableCell
-                                        className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
-                                        {s.items?.map((item: any, i: number) => (
-                                            <div key={i}>
-                                                {item.itemName}
-                                            </div>
-                                        ))}
-                                    </TableCell>
-                                    <TableCell
-                                        className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
-                                        {s.items?.map((item: any, i: number) => (
-                                            <div key={i}>
-                                                {item.hsnCode}
-                                            </div>
-                                        ))}
-
-                                    </TableCell>
-                                    <TableCell
-                                        className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
-                                        {s.items?.map((item: any, i: number) => (
-                                            <div key={i}>
-                                                {item.weight}
-                                            </div>
-                                        ))}
-                                    </TableCell>
-                                    <TableCell
-                                        className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
-                                        {s.items?.map((item: any, i: number) => (
-                                            <div key={i}>
-                                                ₹{item.wastage}
-                                            </div>
-                                        ))}
-                                    </TableCell>
-                                    <TableCell
-                                        className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
-                                        {s.items?.map((item: any, i: number) => (
-                                            <div key={i}>
-                                                ₹{item.rate}
-                                            </div>
-                                        ))}
-                                    </TableCell>
-                                    <TableCell
-                                        className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
-                                        {s.items?.map((item: any, i: number) => (
-                                            <div key={i}>
-                                                ₹{item.makingCharge}
-                                            </div>
-                                        ))}
-                                    </TableCell>
-                                    <TableCell
-                                        className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
-                                        {s.items?.map((item: any, i: number) => (
-                                            <div key={i}>
-                                                ₹{item.sgst}
-                                            </div>
-                                        ))}
-
-                                    </TableCell>
-                                    <TableCell
-                                        className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
-                                        {s.items?.map((item: any, i: number) => (
-                                            <div key={i}>
-                                                ₹{item.cgst}
-                                            </div>
-                                        ))}
-
-                                    </TableCell>
-                                    <TableCell
-                                        className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
-                                        {s.items?.map((item: any, i: number) => (
-                                            <div key={i}>
-                                                ₹{Number(item.totalAmount).toLocaleString("en-IN")}
-                                            </div>
-                                        ))}
-
-                                    </TableCell>
-                                    <TableCell
-                                        className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
-                                       <span className="text-green-700 font-semibold">
-                                           ₹{Number(s.billTotalAmount).toLocaleString("en-IN")}
-</span>
-                                    </TableCell>
-                                    <TableCell
-                                        className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
-                                        ₹{Number(s.billPaidAmount).toLocaleString("en-IN")}
-                                    </TableCell>
-                                    <TableCell
-                                        className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
-                                        <Badge
-                                            size="sm"
-                                            color={
-                                                (() => {
-                                                    const balance = Number(s.billBalance);
-                                                    const dueDate = parseDate(s.billBalanceDue);
-                                                    const today = new Date();
-
-                                                    if (balance <= 0) return "success";
-                                                    if (dueDate < today && balance > 0) return "error";
-                                                    return "warning";
-                                                })()
-                                            }
-                                        >
-                                           <span className="font-bold">
-    ₹{s.billBalance}
-</span>
-                                        </Badge>
-                                    </TableCell>
-                                    <TableCell
-                                        className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
-                                        {s.billBalanceDue}
-
-                                    </TableCell>
-                                    <TableCell
-                                        className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
-                                        {s.billPaymentMode}
-                                    </TableCell>
-                                    <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
-                                        {s.billBilledBy}
-                                    </TableCell>
-                                    {s.billBalance > 0 && (
-                                        <TableCell
-                                            className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
-
-                                            <button
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    setSelectedBill(s);
-                                                    setIsEditMode(true);
-                                                    openPayModal();
-                                                }}
-                                                className="
-inline-flex
-items-center
-gap-2
-rounded-xl
-bg-gradient-to-r
-from-yellow-500
-to-amber-600
-px-4
-py-2
-text-white
-font-semibold
-shadow-md
-hover:shadow-xl
-hover:scale-105
-transition-all
-"
-                                            >
-                                                <svg
-                                                    className="fill-current"
-                                                    width="18"
-                                                    height="18"
-                                                    viewBox="0 0 18 18"
-                                                    fill="none"
-                                                    xmlns="http://www.w3.org/2000/svg"
-                                                >
-                                                    <path
-                                                        fillRule="evenodd"
-                                                        clipRule="evenodd"
-                                                        d="M15.0911 2.78206C14.2125 1.90338 12.7878 1.90338 11.9092 2.78206L4.57524 10.116C4.26682 10.4244 4.0547 10.8158 3.96468 11.2426L3.31231 14.3352C3.25997 14.5833 3.33653 14.841 3.51583 15.0203C3.69512 15.1996 3.95286 15.2761 4.20096 15.2238L7.29355 14.5714C7.72031 14.4814 8.11172 14.2693 8.42013 13.9609L15.7541 6.62695C16.6327 5.74827 16.6327 4.32365 15.7541 3.44497L15.0911 2.78206ZM12.9698 3.84272C13.2627 3.54982 13.7376 3.54982 14.0305 3.84272L14.6934 4.50563C14.9863 4.79852 14.9863 5.2734 14.6934 5.56629L14.044 6.21573L12.3204 4.49215L12.9698 3.84272ZM11.2597 5.55281L5.6359 11.1766C5.53309 11.2794 5.46238 11.4099 5.43238 11.5522L5.01758 13.5185L6.98394 13.1037C7.1262 13.0737 7.25666 13.003 7.35947 12.9002L12.9833 7.27639L11.2597 5.55281Z"
-                                                        fill=""
-                                                    />
-                                                </svg>
-                                                Pay
-                                            </button>
-
-                                        </TableCell>
-                                    )}
-                                </TableRow>
-                            ))}
-                        </TableBody>
-                    </Table>
-                </div>
-                <div className="flex items-center justify-between p-4">
-                    <button
-                        disabled={page === 0}
-                        onClick={() => setPage(page - 1)}
-                        className="
-rounded-xl
-bg-gradient-to-r
-from-yellow-500
-to-amber-600
-px-5
-py-2
-text-white
-font-semibold
-shadow-md
-hover:shadow-lg
-disabled:opacity-40
-"
-                    >
-                        Previous
-                    </button>
-
-                    <span className="font-semibold text-yellow-700">
-                    Page {page + 1} of {totalPages}
-                </span>
-
-                    <button
-                        disabled={page + 1 >= totalPages}
-                        onClick={() => setPage(page + 1)}
-                        className="
-rounded-xl
-bg-gradient-to-r
-from-yellow-500
-to-amber-600
-px-5
-py-2
-text-white
-font-semibold
-shadow-md
-hover:shadow-lg
-disabled:opacity-40
-"
-                    >
-                        Next
-                    </button>
-
-                </div>
-            </div>
-
-            <Modal isOpen={isPayModalOpen} onClose={closePayModal} className="max-w-[700px] m-4">
-                <div
-                    className="
-rounded-3xl
-border
-border-yellow-300
-bg-gradient-to-br
-from-white
-via-yellow-50
-to-yellow-100
-shadow-2xl
-p-8
-">
-                    <div className="px-2 pr-14">
-                        <h2 className="text-3xl font-bold text-yellow-700">
-                            💰 Pay Balance
-                        </h2>
-                        <p className="text-gray-600 mt-2">
-                            Update customer payment details.
-                        </p>
-                    </div>
-                    <form className="flex flex-col">
-                        <div className="px-2 overflow-y-auto custom-scrollbar">
-                            <div className="grid grid-cols-1 gap-x-6 gap-y-5 lg:grid-cols-2">
-
-                                <div>
-                                    <Label>Pay Amount</Label>
-                                    <Input className="
-rounded-xl
-border-yellow-300
-bg-yellow-50
-focus:border-yellow-500
-focus:ring-yellow-300
-"
-                                           type="number"
-                                           value={payAmount}
-                                           onChange={(e) => setPayAmount(e.target.value)}
-                                    />
-                                </div>
-
-
-                                <div>
-                                    <Label>Payment Mode</Label>
-
-                                    <select
-                                        value={selectedBill.billPaymentMode || ""}
-                                        onChange={(e) =>
-                                            setSelectedBill({
-                                                ...selectedBill,
-                                                billPaymentMode: e.target.value
-                                            })
-                                        }
-                                        className="
-h-11
-w-full
-rounded-xl
-border
-border-yellow-300
-bg-yellow-50
-px-4
-focus:border-yellow-500
-focus:ring-2
-focus:ring-yellow-300
-"
+                                    <svg
+                                        width="22"
+                                        height="22"
+                                        viewBox="0 0 24 24"
+                                        fill="none"
+                                        xmlns="http://www.w3.org/2000/svg"
                                     >
-                                        <option value="">Select Role</option>
 
-                                        {paymentMethod.map((pay) => (
-                                            <option key={pay} value={pay}>
-                                                {pay}
-                                            </option>
-                                        ))}
-                                    </select>
+                                        <path
+                                            d="M7 3H17C18.1046 3 19 3.89543 19 5V21L12 18L5 21V5C5 3.89543 5.89543 3 7 3Z"
+                                            stroke="currentColor"
+                                            strokeWidth="1.8"
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                        />
+
+                                        <path
+                                            d="M8.5 7H15.5"
+                                            stroke="currentColor"
+                                            strokeWidth="1.8"
+                                            strokeLinecap="round"
+                                        />
+
+                                        <path
+                                            d="M8.5 11H15.5"
+                                            stroke="currentColor"
+                                            strokeWidth="1.8"
+                                            strokeLinecap="round"
+                                        />
+
+                                    </svg>
+
                                 </div>
-                            </div>
-                        </div>
 
-                        <div className="flex items-center gap-3 px-2 mt-6 lg:justify-end">
-                            <Button className="
-border-yellow-400
-text-yellow-700
-hover:bg-yellow-100
-"
-                                    size="sm"
-                                    variant="outline"
-                                    onClick={closePayModal}
-                            >
-                                Close
-                            </Button>
+                                <div>
 
-                            <Button className="
-bg-gradient-to-r
-from-yellow-500
-to-amber-600
-text-white
-shadow-lg
-hover:shadow-xl
-"
-                                    size="sm"
-                                    onClick={handleSave}
-                            >
-                                {isEditMode ? "Save Changes" : "Add User"}
-                            </Button>
-                        </div>
-                    </form>
-                </div>
-            </Modal>
+                                    <h1 className="text-2xl font-semibold text-slate-800">
+                                        Sales Bills
+                                    </h1>
 
-            <Modal isOpen={isViewModalOpen} onClose={closeViewModal} className="max-w-[700px] m-4">
-                <div
-                    className="
-rounded-3xl
-border
-border-yellow-300
-bg-gradient-to-br
-from-white
-via-yellow-50
-to-yellow-100
-shadow-2xl
-p-8
-">
-                    <div className="px-2 pr-14">
-                        <h2 className="text-3xl font-bold text-yellow-700">
-                            🧾 Customer Bill
-                        </h2>
-
-                        <p className="text-gray-600 mt-2">
-                            View complete bill details
-                        </p>
-                    </div>
-                    <form className="flex flex-col">
-                        <div className="px-2 overflow-y-auto custom-scrollbar">
-                            <div className="grid grid-cols-1 gap-x-6 gap-y-5 lg:grid-cols-2">
-                                <div className="rounded-xl bg-white border border-yellow-200 p-4 shadow-sm">
-
-                                    <Label className="text-yellow-700 font-semibold">
-                                        Bill Number
-                                    </Label>
-
-                                    <p className="mt-1 font-medium text-gray-700">
-                                        {selectedBill.billNumber}
+                                    <p className="mt-0.5 text-sm text-slate-500">
+                                        Search, view, print and manage customer bills
                                     </p>
 
                                 </div>
-                                <div className="rounded-xl bg-white border border-yellow-200 p-4 shadow-sm">
-                                    <Label className="text-yellow-700 font-semibold">Date</Label>
-                                    <p className="mt-1 font-medium text-gray-700">{selectedBill.billDate}</p>
-                                </div>
-                                <div className="rounded-xl bg-white border border-yellow-200 p-4 shadow-sm">
-                                    <Label className="text-yellow-700 font-semibold">Name</Label>
-                                    <p className="mt-1 font-medium text-gray-700">{selectedBill.billName}</p>
-                                </div>
-                                <div className="rounded-xl bg-white border border-yellow-200 p-4 shadow-sm">
-                                    <Label className="text-yellow-700 font-semibold">Address</Label>
-                                    <p className="mt-1 font-medium text-gray-700">{selectedBill.billAddress}</p>
-                                </div>
-                                <div className="rounded-xl bg-white border border-yellow-200 p-4 shadow-sm">
-                                    <Label className="text-yellow-700 font-semibold">Phone Number</Label>
-                                    <p className="mt-1 font-medium text-gray-700">{selectedBill.billPhone}</p>
-                                </div>
-                                <div className="rounded-xl bg-white border border-yellow-200 p-4 shadow-sm">
-                                    <Label className="text-yellow-700 font-semibold">Particulars</Label>
-                                    <p className="mt-1 font-medium text-gray-700">{selectedBill.items?.map((item: any, i: number) => (
-                                        <div key={i}>
-                                            {item.itemName}
-                                        </div>
-                                    ))}</p>
 
-                                </div>
-                                <div className="rounded-xl bg-white border border-yellow-200 p-4 shadow-sm">
-                                    <Label className="text-yellow-700 font-semibold">HSN Code</Label>
-                                    <p className="mt-1 font-medium text-gray-700">{selectedBill.items?.map((item: any, i: number) => (
-                                        <div key={i}>
-                                            {item.hsnCode}
-                                        </div>
-                                    ))}</p>
-                                </div>
-                                <div className="rounded-xl bg-white border border-yellow-200 p-4 shadow-sm">
-                                    <Label className="text-yellow-700 font-semibold">Weight</Label>
-                                    <p className="mt-1 font-medium text-gray-700">{selectedBill.items?.map((item: any, i: number) => (
-                                        <div key={i}>
-                                            {item.weight}
-                                        </div>
-                                    ))}</p>
-                                </div>
-                                <div className="rounded-xl bg-white border border-yellow-200 p-4 shadow-sm">
-                                    <Label className="text-yellow-700 font-semibold">Wastage</Label>
-                                    <p className="mt-1 font-medium text-gray-700">{selectedBill.items?.map((item: any, i: number) => (
-                                        <div key={i}>
-                                            ₹{item.wastage}
-                                        </div>
-                                    ))}</p>
-                                </div>
-                                <div className="rounded-xl bg-white border border-yellow-200 p-4 shadow-sm">
-                                    <Label className="text-yellow-700 font-semibold">Rate</Label>
-                                    <p className="mt-1 font-medium text-gray-700">{selectedBill.items?.map((item: any, i: number) => (
-                                        <div key={i}>
-                                            ₹{item.rate}
-                                        </div>
-                                    ))}</p>
-                                </div>
-                                <div className="rounded-xl bg-white border border-yellow-200 p-4 shadow-sm">
-                                    <Label className="text-yellow-700 font-semibold">Making Charge</Label>
-                                    <p className="mt-1 font-medium text-gray-700">{selectedBill.items?.map((item: any, i: number) => (
-                                        <div key={i}>
-                                            ₹{item.makingCharge}
-                                        </div>
-                                    ))}</p>
-                                </div>
-                                <div className="rounded-xl bg-white border border-yellow-200 p-4 shadow-sm">
-                                    <Label className="text-yellow-700 font-semibold">SGST</Label>
-                                    <p className="mt-1 font-medium text-gray-700">{selectedBill.items?.map((item: any, i: number) => (
-                                        <div key={i}>
-                                            ₹{item.sgst}
-                                        </div>
-                                    ))}</p>
-                                </div>
-                                <div className="rounded-xl bg-white border border-yellow-200 p-4 shadow-sm">
-                                    <Label className="text-yellow-700 font-semibold">CGST</Label>
-                                    <p className="mt-1 font-medium text-gray-700">{selectedBill.items?.map((item: any, i: number) => (
-                                        <div key={i}>
-                                            ₹{item.cgst}
-                                        </div>
-                                    ))}</p>
-                                </div>
-                                <div className="rounded-xl bg-white border border-yellow-200 p-4 shadow-sm">
-                                    <Label className="text-yellow-700 font-semibold">Total Amount</Label>
-                                    <p className="mt-1 font-medium text-gray-700">{selectedBill.items?.map((item: any, i: number) => (
-                                        <div key={i}>
-                                            ₹{item.totalAmount}
-                                        </div>
-                                    ))}</p>
-
-                                </div>
-                                <div className="rounded-xl bg-white border border-yellow-200 p-4 shadow-sm">
-                                    <Label className="text-yellow-700 font-semibold">Grand Total</Label>
-                                    <p className="mt-1 font-medium text-gray-700">₹{selectedBill.billTotalAmount}</p>
-                                </div>
-                                <div className="rounded-xl bg-white border border-yellow-200 p-4 shadow-sm">
-                                    <Label className="text-yellow-700 font-semibold">Paid Amount</Label>
-                                    <p className="mt-1 font-medium text-gray-700">₹{selectedBill.billPaidAmount}</p>
-                                </div>
-                                <div className="rounded-xl bg-white border border-yellow-200 p-4 shadow-sm">
-                                    <Label className="text-yellow-700 font-semibold">Balance</Label>
-                                    <p className="mt-1 font-medium text-gray-700">₹{selectedBill.billBalance}</p>
-                                </div>
-                                <div className="rounded-xl bg-white border border-yellow-200 p-4 shadow-sm">
-                                    <Label className="text-yellow-700 font-semibold">Due Date</Label>
-                                    <p className="mt-1 font-medium text-gray-700">{selectedBill.billBalanceDue}</p>
-                                </div>
-                                <div className="rounded-xl bg-white border border-yellow-200 p-4 shadow-sm">
-                                    <Label className="text-yellow-700 font-semibold">Payment Mode</Label>
-                                    <p className="mt-1 font-medium text-gray-700">{selectedBill.billPaymentMode}</p>
-                                </div>
-                                <div className="rounded-xl bg-white border border-yellow-200 p-4 shadow-sm">
-                                    <Label className="text-yellow-700 font-semibold">Customer ID</Label>
-                                    <p className="mt-1 font-medium text-gray-700">{selectedBill.idType}</p>
-                                </div>
-                                <div className="rounded-xl bg-white border border-yellow-200 p-4 shadow-sm">
-                                    <Label className="text-yellow-700 font-semibold">Customer ID Number</Label>
-                                    <p className="mt-1 font-medium text-gray-700">{selectedBill.idNumber}</p>
-                                </div>
-                                <div className="rounded-xl bg-white border border-yellow-200 p-4 shadow-sm">
-                                    <Label className="text-yellow-700 font-semibold">Billed By</Label>
-                                    <p className="mt-1 font-medium text-gray-700">{selectedBill.billBilledBy}</p>
-                                </div>
                             </div>
+
+                            <div
+                                className="
+                                hidden
+                                rounded-lg
+                                border
+                                border-slate-200
+                                bg-slate-50
+                                px-4
+                                py-2
+                                text-right
+                                sm:block
+                                "
+                            >
+
+                                <p className="text-xs text-slate-500">
+                                    Billing System
+                                </p>
+
+                                <p className="text-sm font-semibold text-slate-700">
+                                    Sales Management
+                                </p>
+
+                            </div>
+
                         </div>
 
-                        <div className="flex items-center gap-3 px-2 mt-6 lg:justify-end">
-                            <Button className="
-bg-gradient-to-r
-from-yellow-500
-to-amber-600
-text-white
-shadow-lg
-hover:shadow-xl
-"
+                    </div>
+
+                    {/* =================================================
+                        SEARCH & FILTERS
+                    ================================================== */}
+
+                    <div
+                        className="
+                        rounded-xl
+                        border
+                        border-slate-200
+                        bg-white
+                        shadow-sm
+                        "
+                    >
+
+                        <div className="border-b border-slate-200 px-6 py-4">
+
+                            <div className="flex items-center gap-3">
+
+                                <div
+                                    className="
+                                    flex
+                                    h-9
+                                    w-9
+                                    items-center
+                                    justify-center
+                                    rounded-lg
+                                    bg-slate-100
+                                    text-slate-600
+                                    "
+                                >
+
+                                    <svg
+                                        width="18"
+                                        height="18"
+                                        viewBox="0 0 24 24"
+                                        fill="none"
+                                        xmlns="http://www.w3.org/2000/svg"
+                                    >
+
+                                        <circle
+                                            cx="11"
+                                            cy="11"
+                                            r="6"
+                                            stroke="currentColor"
+                                            strokeWidth="1.8"
+                                        />
+
+                                        <path
+                                            d="M16 16L21 21"
+                                            stroke="currentColor"
+                                            strokeWidth="1.8"
+                                            strokeLinecap="round"
+                                        />
+
+                                    </svg>
+
+                                </div>
+
+                                <div>
+
+                                    <h2 className="text-base font-semibold text-slate-800">
+                                        Search & Filters
+                                    </h2>
+
+                                    <p className="text-xs text-slate-500">
+                                        Filter bills using the available criteria
+                                    </p>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                        <div className="p-6">
+
+                            <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-4">
+
+                                {/* Bill Number */}
+
+                                <div>
+
+                                    <Label>
+                                        Bill Number
+                                    </Label>
+
+                                    <input
+                                        type="text"
+                                        placeholder="Search Bill Number"
+                                        value={billNumberFilter}
+                                        onChange={(e) =>
+                                            handleBillNumberChange(
+                                                e.target.value
+                                            )
+                                        }
+                                        className="
+                                        mt-1.5
+                                        h-11
+                                        w-full
+                                        rounded-lg
+                                        border
+                                        border-slate-300
+                                        bg-white
+                                        px-3.5
+                                        text-sm
+                                        text-slate-800
+                                        outline-none
+                                        transition
+                                        placeholder:text-slate-400
+                                        focus:border-blue-500
+                                        focus:ring-2
+                                        focus:ring-blue-100
+                                        "
+                                    />
+
+                                </div>
+
+                                {/* Phone */}
+
+                                <div>
+
+                                    <Label>
+                                        Phone Number
+                                    </Label>
+
+                                    <input
+                                        type="text"
+                                        placeholder="Search Phone Number"
+                                        value={phoneFilter}
+                                        onChange={(e) =>
+                                            handlePhoneChange(
+                                                e.target.value
+                                            )
+                                        }
+                                        className="
+                                        mt-1.5
+                                        h-11
+                                        w-full
+                                        rounded-lg
+                                        border
+                                        border-slate-300
+                                        bg-white
+                                        px-3.5
+                                        text-sm
+                                        text-slate-800
+                                        outline-none
+                                        transition
+                                        placeholder:text-slate-400
+                                        focus:border-blue-500
+                                        focus:ring-2
+                                        focus:ring-blue-100
+                                        "
+                                    />
+
+                                </div>
+
+                                {/* From Date */}
+
+                                <div>
+
+                                    <Label>
+                                        From Date
+                                    </Label>
+
+                                    <input
+                                        type="date"
+                                        value={
+                                            fromDate
+                                                ? fromDate
+                                                    .split("-")
+                                                    .reverse()
+                                                    .join("-")
+                                                : ""
+                                        }
+                                        onChange={
+                                            handleFromDateChange
+                                        }
+                                        className="
+                                        mt-1.5
+                                        h-11
+                                        w-full
+                                        rounded-lg
+                                        border
+                                        border-slate-300
+                                        bg-white
+                                        px-3.5
+                                        text-sm
+                                        text-slate-800
+                                        outline-none
+                                        transition
+                                        focus:border-blue-500
+                                        focus:ring-2
+                                        focus:ring-blue-100
+                                        "
+                                    />
+
+                                </div>
+
+                                {/* To Date */}
+
+                                <div>
+
+                                    <Label>
+                                        To Date
+                                    </Label>
+
+                                    <input
+                                        type="date"
+                                        value={
+                                            toDate
+                                                ? toDate
+                                                    .split("-")
+                                                    .reverse()
+                                                    .join("-")
+                                                : ""
+                                        }
+                                        onChange={
+                                            handleToDateChange
+                                        }
+                                        className="
+                                        mt-1.5
+                                        h-11
+                                        w-full
+                                        rounded-lg
+                                        border
+                                        border-slate-300
+                                        bg-white
+                                        px-3.5
+                                        text-sm
+                                        text-slate-800
+                                        outline-none
+                                        transition
+                                        focus:border-blue-500
+                                        focus:ring-2
+                                        focus:ring-blue-100
+                                        "
+                                    />
+
+                                </div>
+
+                            </div>
+
+                            {/* Pending Only */}
+
+                            <div className="mt-5">
+
+                                <label
+                                    className="
+                                    inline-flex
+                                    cursor-pointer
+                                    items-center
+                                    gap-3
+                                    rounded-lg
+                                    border
+                                    border-amber-200
+                                    bg-amber-50
+                                    px-4
+                                    py-3
+                                    "
+                                >
+
+                                    <input
+                                        type="checkbox"
+                                        checked={pendingOnly}
+                                        onChange={(e) =>
+                                            handlePendingChange(
+                                                e.target.checked
+                                            )
+                                        }
+                                        className="
+                                        h-4
+                                        w-4
+                                        rounded
+                                        border-slate-300
+                                        text-blue-600
+                                        focus:ring-blue-500
+                                        "
+                                    />
+
+                                    <div>
+
+                                        <p className="text-sm font-medium text-slate-700">
+                                            Pending Balance Only
+                                        </p>
+
+                                        <p className="text-xs text-slate-500">
+                                            Show only bills with outstanding balance
+                                        </p>
+
+                                    </div>
+
+                                </label>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                    {/* =================================================
+                        SALES BILL TABLE
+                    ================================================== */}
+
+                    <div
+                        className="
+                        rounded-xl
+                        border
+                        border-slate-200
+                        bg-white
+                        shadow-sm
+                        "
+                    >
+
+                        {/* Table Header */}
+
+                        <div className="border-b border-slate-200 px-5 py-4 sm:px-6">
+
+                            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+
+                                <div>
+
+                                    <h2 className="text-base font-semibold text-slate-800">
+                                        Sales Bills
+                                    </h2>
+
+                                    <p className="text-xs text-slate-500">
+                                        Customer billing history and payment status
+                                    </p>
+
+                                </div>
+
+                                <div
+                                    className="
+                                    rounded-lg
+                                    bg-slate-100
+                                    px-3
+                                    py-1.5
+                                    text-xs
+                                    font-medium
+                                    text-slate-600
+                                    "
+                                >
+                                    {salesBills.length} Bills
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                        {/* Table */}
+
+                        <div className="max-w-full overflow-x-auto">
+
+                            <Table>
+
+                                <TableHeader className="bg-slate-50">
+
+                                    <TableRow>
+
+                                        {[
+                                            "Bill Number",
+                                            "Date",
+                                            "Name",
+                                            "Phone Number",
+                                            "Particulars",
+                                            "HSN Code",
+                                            "Quantity",
+                                            "Rate (₹)",
+                                            "SGST (₹)",
+                                            "CGST (₹)",
+                                            "Total Amount (₹)",
+                                            "Grand Total (₹)",
+                                            "Paid Amount (₹)",
+                                            "Balance (₹)",
+                                            "Due Date",
+                                            "Payment Mode",
+                                            "Billed By",
+                                            "Action",
+                                        ].map((heading) => (
+
+                                            <TableCell
+                                                key={heading}
+                                                isHeader
+                                                className="
+                                                whitespace-nowrap
+                                                border-b
+                                                border-slate-200
+                                                px-4
+                                                py-3
+                                                text-left
+                                                text-xs
+                                                font-semibold
+                                                uppercase
+                                                tracking-wider
+                                                text-slate-500
+                                                "
+                                            >
+                                                {heading}
+                                            </TableCell>
+
+                                        ))}
+
+                                    </TableRow>
+
+                                </TableHeader>
+
+                                <TableBody className="divide-y divide-slate-100">
+
+                                    {salesBills.length === 0 ? (
+
+                                        <TableRow>
+
+                                            <TableCell
+                                               /* colSpan={18}*/
+                                                className="px-6 py-16 text-center"
+                                            >
+
+                                                <div className="flex flex-col items-center">
+
+                                                    <div
+                                                        className="
+                                                        flex
+                                                        h-12
+                                                        w-12
+                                                        items-center
+                                                        justify-center
+                                                        rounded-full
+                                                        bg-slate-100
+                                                        text-slate-400
+                                                        "
+                                                    >
+
+                                                        <svg
+                                                            width="24"
+                                                            height="24"
+                                                            viewBox="0 0 24 24"
+                                                            fill="none"
+                                                            xmlns="http://www.w3.org/2000/svg"
+                                                        >
+
+                                                            <path
+                                                                d="M7 3H17C18.1046 3 19 3.89543 19 5V21L12 18L5 21V5C5 3.89543 5.89543 3 7 3Z"
+                                                                stroke="currentColor"
+                                                                strokeWidth="1.8"
+                                                                strokeLinecap="round"
+                                                                strokeLinejoin="round"
+                                                            />
+
+                                                        </svg>
+
+                                                    </div>
+
+                                                    <p className="mt-4 text-sm font-medium text-slate-700">
+                                                        No bills found
+                                                    </p>
+
+                                                    <p className="mt-1 text-xs text-slate-400">
+                                                        Try changing your search or filter criteria.
+                                                    </p>
+
+                                                </div>
+
+                                            </TableCell>
+
+                                        </TableRow>
+
+                                    ) : (
+
+                                        salesBills.map((bill) => {
+
+                                            const balance = Number(
+                                                bill.billBalance || 0
+                                            );
+
+                                            const overdue =
+                                                isBillOverdue(
+                                                    balance,
+                                                    bill.billBalanceDue
+                                                );
+
+                                            return (
+
+                                                <TableRow
+                                                    key={bill.id}
+                                                    className="
+                                                    cursor-pointer
+                                                    transition-colors
+                                                    hover:bg-slate-50
+                                                    "
+                                                    onClick={() =>
+                                                        handleOpenViewModal(
+                                                            bill
+                                                        )
+                                                    }
+                                                >
+
+                                                    {/* Bill Number */}
+
+                                                    <TableCell className="whitespace-nowrap px-4 py-3 text-sm font-medium text-slate-800">
+                                                        {bill.billNumber || "-"}
+                                                    </TableCell>
+
+                                                    {/* Date */}
+
+                                                    <TableCell className="whitespace-nowrap px-4 py-3 text-sm text-slate-500">
+                                                        {bill.billDate || "-"}
+                                                    </TableCell>
+
+                                                    {/* Name */}
+
+                                                    <TableCell className="whitespace-nowrap px-4 py-3 text-sm text-slate-700">
+                                                        {bill.billName || "-"}
+                                                    </TableCell>
+
+                                                    {/* Phone */}
+
+                                                    <TableCell className="whitespace-nowrap px-4 py-3 text-sm text-slate-500">
+                                                        {bill.billPhone || "-"}
+                                                    </TableCell>
+
+                                                    {/* Particulars */}
+
+                                                    <TableCell className="px-4 py-3 text-sm text-slate-600">
+
+                                                        <div className="space-y-1">
+
+                                                            {bill.items?.length ? (
+
+                                                                bill.items.map(
+                                                                    (
+                                                                        item,
+                                                                        index
+                                                                    ) => (
+
+                                                                        <div
+                                                                            key={
+                                                                                item.id ??
+                                                                                index
+                                                                            }
+                                                                            className="whitespace-nowrap"
+                                                                        >
+                                                                            {item.itemName ||
+                                                                                "-"}
+                                                                        </div>
+
+                                                                    )
+                                                                )
+
+                                                            ) : (
+
+                                                                <span className="text-slate-400">
+                                                                    -
+                                                                </span>
+
+                                                            )}
+
+                                                        </div>
+
+                                                    </TableCell>
+
+                                                    {/* HSN */}
+
+                                                    <TableCell className="px-4 py-3 text-sm text-slate-500">
+
+                                                        <div className="space-y-1">
+
+                                                            {bill.items?.length ? (
+
+                                                                bill.items.map(
+                                                                    (
+                                                                        item,
+                                                                        index
+                                                                    ) => (
+
+                                                                        <div
+                                                                            key={
+                                                                                item.id ??
+                                                                                index
+                                                                            }
+                                                                            className="whitespace-nowrap"
+                                                                        >
+                                                                            {item.hsnCode ||
+                                                                                "-"}
+                                                                        </div>
+
+                                                                    )
+                                                                )
+
+                                                            ) : (
+
+                                                                <span className="text-slate-400">
+                                                                    -
+                                                                </span>
+
+                                                            )}
+
+                                                        </div>
+
+                                                    </TableCell>
+
+                                                    {/* Quantity */}
+
+                                                    <TableCell className="px-4 py-3 text-right text-sm text-slate-600">
+
+                                                        <div className="space-y-1">
+
+                                                            {bill.items?.length ? (
+
+                                                                bill.items.map(
+                                                                    (
+                                                                        item,
+                                                                        index
+                                                                    ) => (
+
+                                                                        <div
+                                                                            key={
+                                                                                item.id ??
+                                                                                index
+                                                                            }
+                                                                        >
+                                                                            {item.quantity ?? 0}
+                                                                        </div>
+
+                                                                    )
+                                                                )
+
+                                                            ) : (
+
+                                                                <span className="text-slate-400">
+                                                                    -
+                                                                </span>
+
+                                                            )}
+
+                                                        </div>
+
+                                                    </TableCell>
+
+                                                    {/* Rate */}
+
+                                                    <TableCell className="px-4 py-3 text-right text-sm text-slate-600">
+
+                                                        <div className="space-y-1">
+
+                                                            {bill.items?.length ? (
+
+                                                                bill.items.map(
+                                                                    (
+                                                                        item,
+                                                                        index
+                                                                    ) => (
+
+                                                                        <div
+                                                                            key={
+                                                                                item.id ??
+                                                                                index
+                                                                            }
+                                                                            className="whitespace-nowrap"
+                                                                        >
+                                                                            ₹{" "}
+                                                                            {formatAmount(
+                                                                                item.rate
+                                                                            )}
+                                                                        </div>
+
+                                                                    )
+                                                                )
+
+                                                            ) : (
+
+                                                                <span className="text-slate-400">
+                                                                    -
+                                                                </span>
+
+                                                            )}
+
+                                                        </div>
+
+                                                    </TableCell>
+
+                                                    {/* SGST */}
+
+                                                    <TableCell className="px-4 py-3 text-right text-sm text-slate-600">
+
+                                                        <div className="space-y-1">
+
+                                                            {bill.items?.length ? (
+
+                                                                bill.items.map(
+                                                                    (
+                                                                        item,
+                                                                        index
+                                                                    ) => (
+
+                                                                        <div
+                                                                            key={
+                                                                                item.id ??
+                                                                                index
+                                                                            }
+                                                                            className="whitespace-nowrap"
+                                                                        >
+                                                                            ₹{" "}
+                                                                            {formatAmount(
+                                                                                item.sgst
+                                                                            )}
+                                                                        </div>
+
+                                                                    )
+                                                                )
+
+                                                            ) : (
+
+                                                                <span className="text-slate-400">
+                                                                    -
+                                                                </span>
+
+                                                            )}
+
+                                                        </div>
+
+                                                    </TableCell>
+
+                                                    {/* CGST */}
+
+                                                    <TableCell className="px-4 py-3 text-right text-sm text-slate-600">
+
+                                                        <div className="space-y-1">
+
+                                                            {bill.items?.length ? (
+
+                                                                bill.items.map(
+                                                                    (
+                                                                        item,
+                                                                        index
+                                                                    ) => (
+
+                                                                        <div
+                                                                            key={
+                                                                                item.id ??
+                                                                                index
+                                                                            }
+                                                                            className="whitespace-nowrap"
+                                                                        >
+                                                                            ₹{" "}
+                                                                            {formatAmount(
+                                                                                item.cgst
+                                                                            )}
+                                                                        </div>
+
+                                                                    )
+                                                                )
+
+                                                            ) : (
+
+                                                                <span className="text-slate-400">
+                                                                    -
+                                                                </span>
+
+                                                            )}
+
+                                                        </div>
+
+                                                    </TableCell>
+
+                                                    {/* Item Total */}
+
+                                                    <TableCell className="px-4 py-3 text-right text-sm font-medium text-slate-800">
+
+                                                        <div className="space-y-1">
+
+                                                            {bill.items?.length ? (
+
+                                                                bill.items.map(
+                                                                    (
+                                                                        item,
+                                                                        index
+                                                                    ) => (
+
+                                                                        <div
+                                                                            key={
+                                                                                item.id ??
+                                                                                index
+                                                                            }
+                                                                            className="whitespace-nowrap"
+                                                                        >
+                                                                            ₹{" "}
+                                                                            {formatAmount(
+                                                                                item.totalAmount
+                                                                            )}
+                                                                        </div>
+
+                                                                    )
+                                                                )
+
+                                                            ) : (
+
+                                                                <span className="text-slate-400">
+                                                                    -
+                                                                </span>
+
+                                                            )}
+
+                                                        </div>
+
+                                                    </TableCell>
+
+                                                    {/* Grand Total */}
+
+                                                    <TableCell className="px-4 py-3 text-right text-sm font-semibold text-slate-900">
+
+                                                        <span className="whitespace-nowrap">
+                                                            ₹{" "}
+                                                            {formatAmount(
+                                                                bill.billTotalAmount
+                                                            )}
+                                                        </span>
+
+                                                    </TableCell>
+
+                                                    {/* Paid Amount */}
+
+                                                    <TableCell className="px-4 py-3 text-right text-sm font-medium text-emerald-600">
+
+                                                        <span className="whitespace-nowrap">
+                                                            ₹{" "}
+                                                            {formatAmount(
+                                                                bill.billPaidAmount
+                                                            )}
+                                                        </span>
+
+                                                    </TableCell>
+
+                                                    {/* Balance */}
+
+                                                    <TableCell className="px-4 py-3">
+
+                                                        {balance <= 0 ? (
+
+                                                            <Badge
+                                                                size="sm"
+                                                                color="success"
+                                                            >
+                                                                Paid
+                                                            </Badge>
+
+                                                        ) : overdue ? (
+
+                                                            <Badge
+                                                                size="sm"
+                                                                color="error"
+                                                            >
+                                                                ₹{" "}
+                                                                {formatAmount(
+                                                                    balance
+                                                                )}
+                                                            </Badge>
+
+                                                        ) : (
+
+                                                            <Badge
+                                                                size="sm"
+                                                                color="warning"
+                                                            >
+                                                                ₹{" "}
+                                                                {formatAmount(
+                                                                    balance
+                                                                )}
+                                                            </Badge>
+
+                                                        )}
+
+                                                    </TableCell>
+
+                                                    {/* Due Date */}
+
+                                                    <TableCell className="whitespace-nowrap px-4 py-3 text-sm text-slate-500">
+                                                        {bill.billBalanceDue ||
+                                                            "-"}
+                                                    </TableCell>
+
+                                                    {/* Payment Mode */}
+
+                                                    <TableCell className="px-4 py-3">
+
+                                                        <span
+                                                            className="
+                                                            inline-flex
+                                                            rounded-md
+                                                            bg-slate-100
+                                                            px-2.5
+                                                            py-1
+                                                            text-xs
+                                                            font-medium
+                                                            text-slate-600
+                                                            "
+                                                        >
+                                                            {bill.billPaymentMode ||
+                                                                "-"}
+                                                        </span>
+
+                                                    </TableCell>
+
+                                                    {/* Billed By */}
+
+                                                    <TableCell className="whitespace-nowrap px-4 py-3 text-sm text-slate-500">
+                                                        {bill.billBilledBy ||
+                                                            "-"}
+                                                    </TableCell>
+
+                                                    {/* Action */}
+
+                                                    <TableCell className="px-4 py-3">
+
+                                                        {balance > 0 ? (
+
+                                                            <button
+                                                                type="button"
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    handleOpenPayModal(
+                                                                        bill
+                                                                    );
+                                                                }}
+                                                                className="
+                                                                inline-flex
+                                                                items-center
+                                                                gap-2
+                                                                whitespace-nowrap
+                                                                rounded-lg
+                                                                bg-blue-600
+                                                                px-3.5
+                                                                py-2
+                                                                text-xs
+                                                                font-medium
+                                                                text-white
+                                                                shadow-sm
+                                                                transition-colors
+                                                                hover:bg-blue-700
+                                                                focus:outline-none
+                                                                focus:ring-2
+                                                                focus:ring-blue-500
+                                                                focus:ring-offset-2
+                                                                "
+                                                            >
+
+                                                                <svg
+                                                                    width="15"
+                                                                    height="15"
+                                                                    viewBox="0 0 24 24"
+                                                                    fill="none"
+                                                                    xmlns="http://www.w3.org/2000/svg"
+                                                                >
+
+                                                                    <path
+                                                                        d="M12 5V19"
+                                                                        stroke="currentColor"
+                                                                        strokeWidth="2"
+                                                                        strokeLinecap="round"
+                                                                    />
+
+                                                                    <path
+                                                                        d="M5 12H19"
+                                                                        stroke="currentColor"
+                                                                        strokeWidth="2"
+                                                                        strokeLinecap="round"
+                                                                    />
+
+                                                                </svg>
+
+                                                                Pay
+
+                                                            </button>
+
+                                                        ) : (
+
+                                                            <span className="text-xs text-slate-400">
+                                                                Completed
+                                                            </span>
+
+                                                        )}
+
+                                                    </TableCell>
+
+                                                </TableRow>
+
+                                            );
+                                        })
+
+                                    )}
+
+                                </TableBody>
+
+                            </Table>
+
+                        </div>
+
+                    </div>
+
+                    {/* =================================================
+                        PAGINATION
+                    ================================================== */}
+
+                    <div
+                        className="
+                        flex
+                        flex-col
+                        gap-3
+                        rounded-xl
+                        border
+                        border-slate-200
+                        bg-white
+                        p-4
+                        shadow-sm
+                        sm:flex-row
+                        sm:items-center
+                        sm:justify-between
+                        "
+                    >
+
+                        <p className="text-sm text-slate-500">
+
+                            Page{" "}
+
+                            <span className="font-medium text-slate-700">
+                                {totalPages === 0
+                                    ? 0
+                                    : page + 1}
+                            </span>{" "}
+
+                            of{" "}
+
+                            <span className="font-medium text-slate-700">
+                                {totalPages}
+                            </span>
+
+                        </p>
+
+                        <div className="flex items-center gap-2">
+
+                            <button
+                                type="button"
+                                disabled={page === 0}
+                                onClick={() =>
+                                    setPage(
+                                        (currentPage) =>
+                                            Math.max(
+                                                0,
+                                                currentPage - 1
+                                            )
+                                    )
+                                }
+                                className="
+                                rounded-lg
+                                border
+                                border-slate-300
+                                bg-white
+                                px-4
+                                py-2
+                                text-sm
+                                font-medium
+                                text-slate-600
+                                transition-colors
+                                hover:bg-slate-50
+                                disabled:cursor-not-allowed
+                                disabled:opacity-40
+                                "
+                            >
+                                Previous
+                            </button>
+
+                            <button
+                                type="button"
+                                disabled={
+                                    totalPages === 0 ||
+                                    page + 1 >= totalPages
+                                }
+                                onClick={() =>
+                                    setPage(
+                                        (currentPage) =>
+                                            currentPage + 1
+                                    )
+                                }
+                                className="
+                                rounded-lg
+                                bg-blue-600
+                                px-4
+                                py-2
+                                text-sm
+                                font-medium
+                                text-white
+                                transition-colors
+                                hover:bg-blue-700
+                                disabled:cursor-not-allowed
+                                disabled:opacity-40
+                                "
+                            >
+                                Next
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            {/* =========================================================
+                PAY BALANCE MODAL
+            ========================================================== */}
+
+            <Modal
+                isOpen={isPayModalOpen}
+                onClose={handleClosePayModal}
+                className="m-4 max-w-[600px]"
+            >
+
+                <div className="rounded-xl border border-slate-200 bg-white shadow-xl">
+
+                    {/* Header */}
+
+                    <div className="border-b border-slate-200 px-6 py-5">
+
+                        <div className="flex items-start gap-3">
+
+                            <div
+                                className="
+                                flex
+                                h-10
+                                w-10
+                                shrink-0
+                                items-center
+                                justify-center
+                                rounded-lg
+                                bg-blue-50
+                                text-blue-600
+                                "
+                            >
+
+                                <svg
+                                    width="20"
+                                    height="20"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                >
+
+                                    <path
+                                        d="M12 2V22"
+                                        stroke="currentColor"
+                                        strokeWidth="1.8"
+                                        strokeLinecap="round"
+                                    />
+
+                                    <path
+                                        d="M17 5H9.5C8.11929 5 7 6.11929 7 7.5C7 8.88071 8.11929 10 9.5 10H14.5C15.8807 10 17 11.1193 17 12.5C17 13.8807 15.8807 15 14.5 15H7"
+                                        stroke="currentColor"
+                                        strokeWidth="1.8"
+                                        strokeLinecap="round"
+                                    />
+
+                                </svg>
+
+                            </div>
+
+                            <div>
+
+                                <h2 className="text-lg font-semibold text-slate-800">
+                                    Pay Balance
+                                </h2>
+
+                                <p className="mt-1 text-sm text-slate-500">
+                                    Update customer payment details
+                                </p>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                    {/* Body */}
+
+                    <div className="p-6">
+
+                        {selectedBill && (
+
+                            <div className="mb-5 rounded-lg border border-slate-200 bg-slate-50 p-4">
+
+                                <div className="grid grid-cols-2 gap-4">
+
+                                    <div>
+
+                                        <p className="text-xs text-slate-500">
+                                            Bill Number
+                                        </p>
+
+                                        <p className="mt-1 text-sm font-semibold text-slate-800">
+                                            {selectedBill.billNumber ||
+                                                "-"}
+                                        </p>
+
+                                    </div>
+
+                                    <div>
+
+                                        <p className="text-xs text-slate-500">
+                                            Customer
+                                        </p>
+
+                                        <p className="mt-1 text-sm font-semibold text-slate-800">
+                                            {selectedBill.billName ||
+                                                "-"}
+                                        </p>
+
+                                    </div>
+
+                                    <div>
+
+                                        <p className="text-xs text-slate-500">
+                                            Total Amount
+                                        </p>
+
+                                        <p className="mt-1 text-sm font-semibold text-slate-800">
+                                            ₹{" "}
+                                            {formatAmount(
+                                                selectedBill.billTotalAmount
+                                            )}
+                                        </p>
+
+                                    </div>
+
+                                    <div>
+
+                                        <p className="text-xs text-slate-500">
+                                            Pending Balance
+                                        </p>
+
+                                        <p className="mt-1 text-sm font-semibold text-amber-600">
+                                            ₹{" "}
+                                            {formatAmount(
+                                                selectedBill.billBalance
+                                            )}
+                                        </p>
+
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+                        )}
+
+                        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+
+                            {/* Amount */}
+
+                            <div>
+
+                                <Label>
+                                    Pay Amount
+                                </Label>
+
+                                <Input
+                                    className="
+                                    mt-1.5
+                                    rounded-lg
+                                    border-slate-300
+                                    bg-white
+                                    focus:border-blue-500
+                                    focus:ring-blue-100
+                                    "
+                                    type="number"
+                                    min="0"
+                                  /*  step="0.01"*/
+                                    value={payAmount}
+                                    onChange={(e) =>
+                                        setPayAmount(
+                                            e.target.value
+                                        )
+                                    }
+                                    placeholder="Enter amount"
+                                />
+
+                            </div>
+
+                            {/* Payment Mode */}
+
+                            <div>
+
+                                <Label>
+                                    Payment Mode
+                                </Label>
+
+                                <select
+                                    value={paymentMode}
+                                    onChange={(e) =>
+                                        setPaymentMode(
+                                            e.target.value as PaymentMode
+                                        )
+                                    }
+                                    className="
+                                    mt-1.5
+                                    h-11
+                                    w-full
+                                    rounded-lg
+                                    border
+                                    border-slate-300
+                                    bg-white
+                                    px-3.5
+                                    text-sm
+                                    text-slate-800
+                                    outline-none
+                                    transition
+                                    focus:border-blue-500
+                                    focus:ring-2
+                                    focus:ring-blue-100
+                                    "
+                                >
+
+                                    <option value="">
+                                        Select Payment Mode
+                                    </option>
+
+                                    {PAYMENT_METHODS.map(
+                                        (method) => (
+
+                                            <option
+                                                key={method}
+                                                value={method}
+                                            >
+                                                {method}
+                                            </option>
+
+                                        )
+                                    )}
+
+                                </select>
+
+                            </div>
+
+                        </div>
+
+                        {/* Actions */}
+
+                        <div className="mt-6 flex items-center justify-end gap-3 border-t border-slate-200 pt-5">
+
+                            <Button
+                                type="button"
+                                size="sm"
+                                variant="outline"
+                                disabled={isSavingPayment}
+                                className="
+                                border-slate-300
+                                text-slate-600
+                                hover:bg-slate-50
+                                "
+                                onClick={
+                                    handleClosePayModal
+                                }
+                            >
+                                Cancel
+                            </Button>
+
+                            <Button
+                                type="button"
+                                size="sm"
+                                disabled={isSavingPayment}
+                                className="
+                                bg-blue-600
+                                text-white
+                                shadow-sm
+                                hover:bg-blue-700
+                                disabled:cursor-not-allowed
+                                disabled:bg-slate-300
+                                "
+                                onClick={
+                                    handleSavePayment
+                                }
+                            >
+                                {isSavingPayment
+                                    ? "Saving..."
+                                    : "Save Payment"}
+                            </Button>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </Modal>
+
+            {/* =========================================================
+                VIEW BILL MODAL
+            ========================================================== */}
+
+            <Modal
+                isOpen={isViewModalOpen}
+                onClose={handleCloseViewModal}
+                className="m-4 max-w-[900px]"
+            >
+
+                <div
+                    className="
+                    max-h-[90vh]
+                    overflow-y-auto
+                    rounded-xl
+                    border
+                    border-slate-200
+                    bg-white
+                    shadow-xl
+                    "
+                >
+
+                    {/* Header */}
+
+                    <div className="sticky top-0 z-10 border-b border-slate-200 bg-white px-6 py-5">
+
+                        <div className="flex items-start gap-3">
+
+                            <div
+                                className="
+                                flex
+                                h-10
+                                w-10
+                                shrink-0
+                                items-center
+                                justify-center
+                                rounded-lg
+                                bg-blue-50
+                                text-blue-600
+                                "
+                            >
+
+                                <svg
+                                    width="20"
+                                    height="20"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                >
+
+                                    <path
+                                        d="M6 3H18C19.1046 3 20 3.89543 20 5V19C20 20.1046 19.1046 21 18 21H6C4.89543 21 4 20.1046 4 19V5C4 3.89543 4.89543 3 6 3Z"
+                                        stroke="currentColor"
+                                        strokeWidth="1.8"
+                                    />
+
+                                    <path
+                                        d="M8 7H16"
+                                        stroke="currentColor"
+                                        strokeWidth="1.8"
+                                        strokeLinecap="round"
+                                    />
+
+                                    <path
+                                        d="M8 11H16"
+                                        stroke="currentColor"
+                                        strokeWidth="1.8"
+                                        strokeLinecap="round"
+                                    />
+
+                                    <path
+                                        d="M8 15H13"
+                                        stroke="currentColor"
+                                        strokeWidth="1.8"
+                                        strokeLinecap="round"
+                                    />
+
+                                </svg>
+
+                            </div>
+
+                            <div>
+
+                                <h2 className="text-lg font-semibold text-slate-800">
+                                    Customer Bill
+                                </h2>
+
+                                <p className="mt-1 text-sm text-slate-500">
+                                    View complete bill details
+                                </p>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                    {/* Content */}
+
+                    {selectedBill && (
+
+                        <div className="p-6">
+
+                            {/* =================================================
+                                CUSTOMER DETAILS
+                            ================================================== */}
+
+                            <div className="mb-6">
+
+                                <div className="mb-4">
+
+                                    <h3 className="text-sm font-semibold text-slate-800">
+                                        Customer Details
+                                    </h3>
+
+                                    <p className="mt-1 text-xs text-slate-500">
+                                        Customer and billing information
+                                    </p>
+
+                                </div>
+
+                                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+
+                                    <div className="rounded-lg border border-slate-200 bg-white p-4">
+
+                                        <Label>
+                                            Bill Number
+                                        </Label>
+
+                                        <p className="mt-1 text-sm font-medium text-slate-800">
+                                            {selectedBill.billNumber ||
+                                                "-"}
+                                        </p>
+
+                                    </div>
+
+                                    <div className="rounded-lg border border-slate-200 bg-white p-4">
+
+                                        <Label>
+                                            Date
+                                        </Label>
+
+                                        <p className="mt-1 text-sm font-medium text-slate-800">
+                                            {selectedBill.billDate ||
+                                                "-"}
+                                        </p>
+
+                                    </div>
+
+                                    <div className="rounded-lg border border-slate-200 bg-white p-4">
+
+                                        <Label>
+                                            Name
+                                        </Label>
+
+                                        <p className="mt-1 text-sm font-medium text-slate-800">
+                                            {selectedBill.billName ||
+                                                "-"}
+                                        </p>
+
+                                    </div>
+
+                                    <div className="rounded-lg border border-slate-200 bg-white p-4">
+
+                                        <Label>
+                                            Phone Number
+                                        </Label>
+
+                                        <p className="mt-1 text-sm font-medium text-slate-800">
+                                            {selectedBill.billPhone ||
+                                                "-"}
+                                        </p>
+
+                                    </div>
+
+                                    <div className="rounded-lg border border-slate-200 bg-white p-4 sm:col-span-2">
+
+                                        <Label>
+                                            Address
+                                        </Label>
+
+                                        <p className="mt-1 text-sm font-medium text-slate-800">
+                                            {selectedBill.billAddress ||
+                                                "-"}
+                                        </p>
+
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+                            {/* =================================================
+                                BILL ITEMS
+                            ================================================== */}
+
+                            <div className="mb-6">
+
+                                <div className="mb-4">
+
+                                    <h3 className="text-sm font-semibold text-slate-800">
+                                        Bill Items
+                                    </h3>
+
+                                    <p className="mt-1 text-xs text-slate-500">
+                                        Products and applicable taxes
+                                    </p>
+
+                                </div>
+
+                                <div className="overflow-x-auto rounded-lg border border-slate-200">
+
+                                    <Table>
+
+                                        <TableHeader className="bg-slate-50">
+
+                                            <TableRow>
+
+                                                {[
+                                                    "Particulars",
+                                                    "HSN",
+                                                    "Qty",
+                                                    "Rate",
+                                                    "SGST",
+                                                    "CGST",
+                                                    "Total",
+                                                ].map(
+                                                    (
+                                                        heading,
+                                                        index
+                                                    ) => (
+
+                                                        <TableCell
+                                                            key={heading}
+                                                            isHeader
+                                                            className={`
+                                                            whitespace-nowrap
+                                                            border-b
+                                                            border-slate-200
+                                                            px-4
+                                                            py-3
+                                                            text-xs
+                                                            font-semibold
+                                                            uppercase
+                                                            tracking-wider
+                                                            text-slate-500
+                                                            ${
+                                                                index ===
+                                                                0 ||
+                                                                index ===
+                                                                1
+                                                                    ? "text-left"
+                                                                    : "text-right"
+                                                            }
+                                                            `}
+                                                        >
+                                                            {heading}
+                                                        </TableCell>
+
+                                                    )
+                                                )}
+
+                                            </TableRow>
+
+                                        </TableHeader>
+
+                                        <TableBody className="divide-y divide-slate-100">
+
+                                            {selectedBill.items?.length ? (
+
+                                                selectedBill.items.map(
+                                                    (
+                                                        item,
+                                                        index
+                                                    ) => (
+
+                                                        <TableRow
+                                                            key={
+                                                                item.id ??
+                                                                index
+                                                            }
+                                                            className="transition-colors hover:bg-slate-50"
+                                                        >
+
+                                                            <TableCell className="px-4 py-3 text-sm font-medium text-slate-800">
+                                                                {item.itemName ||
+                                                                    "-"}
+                                                            </TableCell>
+
+                                                            <TableCell className="px-4 py-3 text-sm text-slate-500">
+                                                                {item.hsnCode ||
+                                                                    "-"}
+                                                            </TableCell>
+
+                                                            <TableCell className="px-4 py-3 text-right text-sm text-slate-600">
+                                                                {item.quantity ??
+                                                                    0}
+                                                            </TableCell>
+
+                                                            <TableCell className="whitespace-nowrap px-4 py-3 text-right text-sm text-slate-600">
+                                                                ₹{" "}
+                                                                {formatAmount(
+                                                                    item.rate
+                                                                )}
+                                                            </TableCell>
+
+                                                            <TableCell className="whitespace-nowrap px-4 py-3 text-right text-sm text-slate-600">
+                                                                ₹{" "}
+                                                                {formatAmount(
+                                                                    item.sgst
+                                                                )}
+                                                            </TableCell>
+
+                                                            <TableCell className="whitespace-nowrap px-4 py-3 text-right text-sm text-slate-600">
+                                                                ₹{" "}
+                                                                {formatAmount(
+                                                                    item.cgst
+                                                                )}
+                                                            </TableCell>
+
+                                                            <TableCell className="whitespace-nowrap px-4 py-3 text-right text-sm font-semibold text-slate-900">
+                                                                ₹{" "}
+                                                                {formatAmount(
+                                                                    item.totalAmount
+                                                                )}
+                                                            </TableCell>
+
+                                                        </TableRow>
+
+                                                    )
+                                                )
+
+                                            ) : (
+
+                                                <TableRow>
+
+                                                    <TableCell
+                                                     /*   colSpan={7}*/
+                                                        className="px-4 py-8 text-center text-sm text-slate-400"
+                                                    >
+                                                        No items available
+                                                    </TableCell>
+
+                                                </TableRow>
+
+                                            )}
+
+                                        </TableBody>
+
+                                    </Table>
+
+                                </div>
+
+                            </div>
+
+                            {/* =================================================
+                                TOTAL SUMMARY
+                            ================================================== */}
+
+                            <div className="mb-6 rounded-xl border border-slate-200 bg-slate-50 p-5">
+
+                                <div className="ml-auto max-w-md space-y-3">
+
+                                    <div className="flex items-center justify-between text-sm">
+
+                                        <span className="text-slate-500">
+                                            Grand Total
+                                        </span>
+
+                                        <span className="font-semibold text-slate-900">
+                                            ₹{" "}
+                                            {formatAmount(
+                                                selectedBill.billTotalAmount
+                                            )}
+                                        </span>
+
+                                    </div>
+
+                                    <div className="flex items-center justify-between text-sm">
+
+                                        <span className="text-slate-500">
+                                            Paid Amount
+                                        </span>
+
+                                        <span className="font-semibold text-emerald-600">
+                                            ₹{" "}
+                                            {formatAmount(
+                                                selectedBill.billPaidAmount
+                                            )}
+                                        </span>
+
+                                    </div>
+
+                                    <div className="border-t border-slate-200 pt-3">
+
+                                        <div className="flex items-center justify-between">
+
+                                            <span className="text-sm font-medium text-slate-700">
+                                                Balance
+                                            </span>
+
+                                            <span
+                                                className={`
+                                                text-xl
+                                                font-bold
+                                                ${
+                                                    Number(
+                                                        selectedBill.billBalance ||
+                                                        0
+                                                    ) > 0
+                                                        ? "text-amber-600"
+                                                        : "text-emerald-600"
+                                                }
+                                                `}
+                                            >
+                                                ₹{" "}
+                                                {formatAmount(
+                                                    selectedBill.billBalance
+                                                )}
+                                            </span>
+
+                                        </div>
+
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+                            {/* =================================================
+                                PAYMENT DETAILS
+                            ================================================== */}
+
+                            <div className="mb-6">
+
+                                <div className="mb-4">
+
+                                    <h3 className="text-sm font-semibold text-slate-800">
+                                        Payment Details
+                                    </h3>
+
+                                </div>
+
+                                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+
+                                    <div className="rounded-lg border border-slate-200 bg-white p-4">
+
+                                        <Label>
+                                            Due Date
+                                        </Label>
+
+                                        <p className="mt-1 text-sm font-medium text-slate-800">
+                                            {selectedBill.billBalanceDue ||
+                                                "-"}
+                                        </p>
+
+                                    </div>
+
+                                    <div className="rounded-lg border border-slate-200 bg-white p-4">
+
+                                        <Label>
+                                            Payment Mode
+                                        </Label>
+
+                                        <p className="mt-1 text-sm font-medium text-slate-800">
+                                            {selectedBill.billPaymentMode ||
+                                                "-"}
+                                        </p>
+
+                                    </div>
+
+                                    <div className="rounded-lg border border-slate-200 bg-white p-4">
+
+                                        <Label>
+                                            Billed By
+                                        </Label>
+
+                                        <p className="mt-1 text-sm font-medium text-slate-800">
+                                            {selectedBill.billBilledBy ||
+                                                "-"}
+                                        </p>
+
+                                    </div>
+
+                                    <div className="rounded-lg border border-slate-200 bg-white p-4">
+
+                                        <Label>
+                                            Customer ID
+                                        </Label>
+
+                                        <p className="mt-1 break-words text-sm font-medium text-slate-800">
+
+                                            {selectedBill.idType
+                                                ? `${selectedBill.idType}${
+                                                    selectedBill.idNumber
+                                                        ? ` - ${selectedBill.idNumber}`
+                                                        : ""
+                                                }`
+                                                : "-"}
+
+                                        </p>
+
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+                            {/* =================================================
+                                ACTIONS
+                            ================================================== */}
+
+                            <div className="flex flex-col-reverse gap-3 border-t border-slate-200 pt-5 sm:flex-row sm:justify-end">
+
+                                <Button
+                                    type="button"
                                     size="sm"
                                     variant="outline"
-                                    onClick={closeViewModal}
-                            >
-                                Close
-                            </Button>
-                            <Button className="
-bg-gradient-to-r
-from-yellow-500
-to-amber-600
-text-white
-shadow-lg
-hover:shadow-xl
-"
+                                    className="
+                                    border-slate-300
+                                    text-slate-600
+                                    hover:bg-slate-50
+                                    "
+                                    onClick={
+                                        handleCloseViewModal
+                                    }
+                                >
+                                    Close
+                                </Button>
 
+                                <Button
+                                    type="button"
                                     size="sm"
-                                    onClick={() => {
-                                        closeViewModal(); // optional
-                                        setTimeout(() => {
-                                            handleRePrint();
-                                        }, 300); // allow render
-                                    }}
-                            >
-                                Re-Print
-                            </Button>
+                                    className="
+                                    bg-blue-600
+                                    text-white
+                                    shadow-sm
+                                    hover:bg-blue-700
+                                    "
+                                    onClick={
+                                        handlePrintBill
+                                    }
+                                >
+                                    Re-Print
+                                </Button>
+
+                            </div>
 
                         </div>
-                    </form>
+
+                    )}
+
                 </div>
+
             </Modal>
+
+            {/* =========================================================
+                PRINT COMPONENT
+            ========================================================== */}
+
             {selectedBill && (
-                <div style={{display: "none"}}>
-                    <PrintSalesBill ref={printRef} bill={selectedBill}/>
+
+                <div
+                    style={{
+                        display: "none",
+                    }}
+                >
+
+                    <PrintSalesBill
+                        ref={printRef}
+                        bill={selectedBill}
+                    />
+
                 </div>
+
             )}
+
         </>
     );
 }
-

@@ -6,35 +6,37 @@ export default function AuthLayout({
     children: React.ReactNode;
 }) {
     return (
-        <div className="relative min-h-screen overflow-hidden bg-gradient-to-br from-[#FFFDF7] via-[#FFF8E8] to-[#FDE8A8]">
+        <div className="min-h-screen bg-slate-50">
 
-            {/* Decorative Background */}
-           {/* <div className="absolute inset-0 opacity-10">
-                <div className="absolute -top-24 -left-24 h-72 w-72 rounded-full bg-yellow-400 blur-3xl opacity-20"></div>
+            {/* =====================================================
+                MAIN LAYOUT
+            ===================================================== */}
 
-                <div className="absolute bottom-0 right-0 h-96 w-96 rounded-full bg-amber-400 blur-3xl opacity-20"></div>
-            </div>*/}
+            <div className="flex min-h-screen flex-col">
 
-            {/* Theme Toggle */}
-          {/*  <div className="fixed top-6 right-6 z-50">
-                <ThemeTogglerTwo />
-            </div>*/}
+                {/* =================================================
+                    CONTENT
+                ================================================= */}
 
-            {/* Login Content */}
-            <div className="relative z-10 flex min-h-screen flex-col">
-
-                <main className="flex flex-1 items-center justify-center px-6 py-4">
-                    {children}
+                <main className="flex flex-1 items-center justify-center px-4 py-8 sm:px-6 lg:px-8">
+                    <div className="w-full">
+                        {children}
+                    </div>
                 </main>
 
-                {/* Footer */}
-                <footer className="border-t border-yellow-300 bg-gradient-to-br
-from-[#FFFDF7]
-via-[#FFF8E8]
-to-[#FDE8A8] /60 backdrop-blur-md py-5 text-center shadow-inner">
+                {/* =================================================
+                    FOOTER
+                ================================================= */}
 
-                      <p className="mt-2 text-xs text-black-400">
-                        Powered by RK Tech Labs. Mob: 9488492321.
+                <footer className="border-t border-slate-200 bg-white px-4 py-4 text-center">
+
+                    <p className="text-xs text-slate-400">
+                        Powered by{" "}
+                        <span className="font-medium text-slate-500">
+                            RK Tech Labs
+                        </span>
+                        {" "}·{" "}
+                        Mob: 9488492321
                     </p>
 
                 </footer>
@@ -43,5 +45,4 @@ to-[#FDE8A8] /60 backdrop-blur-md py-5 text-center shadow-inner">
         </div>
     );
 }
-
 

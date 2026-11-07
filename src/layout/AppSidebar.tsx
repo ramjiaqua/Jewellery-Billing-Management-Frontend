@@ -1,482 +1,606 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Link, useLocation } from "react-router";
-import {SHOP_NAME} from "../common/constants";
+import { SHOP_NAME } from "../common/constants";
 
-// Assume these icons are imported from an icon library
 import {
-  ChevronDownIcon,
-  GridIcon,
-  HorizontaLDots,
-  ListIcon,
-  PieChartIcon,
-  UserCircleIcon,
+    ChevronDownIcon,
+    GridIcon,
+    HorizontaLDots,
+    UserCircleIcon,
 } from "../icons";
+
 import { useSidebar } from "../context/SidebarContext";
-import SidebarWidget from "./SidebarWidget";
+import SidebarWidget from "./SidebarWidget.tsx";
 
 type NavItem = {
-  name: string;
-  icon: React.ReactNode;
-  path?: string;
-  subItems?: { name: string; path: string; pro?: boolean; new?: boolean }[];
+    name: string;
+    icon: React.ReactNode;
+    path?: string;
+    subItems?: {
+        name: string;
+        path: string;
+        pro?: boolean;
+        new?: boolean;
+    }[];
 };
+
 const userRole = localStorage.getItem("role") || "";
 
-console.log(userRole);
 const navItems: NavItem[] = [
-  /*{
-    icon: <GridIcon />,
-    name: "Sales",
-    subItems: [
-        { name: "Generate Bill", path: "/generate-sales-bill", pro: false },
-        { name: "View Bill", path: "/view-sales-bill", pro: false },
-        { name: "Re-Print Bill", path: "/", pro: false }
-    ],
-  },*/
 
-  ...( ["ADMIN", "STAFF"].includes(userRole)
-          ? [{
-            icon: <GridIcon />,
-            name: "Sales",
-            subItems: [
-              { name: "Generate Bill", path: "/generate-sales-bill", pro: false },
-              { name: "View Bill", path: "/view-sales-bill", pro: false }
-            ],
-          }]
-          : []
-  ),
+    // =========================================================
+    // SALES
+    // =========================================================
 
-  ...( ["ADMIN", "STAFF"].includes(userRole)
-          ? [{
-            icon: <GridIcon />,
-            name: "Purchase",
-            subItems: [
-              { name: "New Item", path: "/under-construction", pro: false },
-              { name: "Old Item", path: "/under-construction", pro: false },
-              { name: "Balance Due", path: "/under-construction", pro: false }
-            ],
-          }]
-          : []
-  ),
- {
-    name: "Chit Scheme",
-    icon: <ListIcon />,
-    subItems: [{ name: "Customers", path: "/under-construction", pro: false },
-               { name: "Chit Schemes", path: "/under-construction", pro: false },
-               { name: "Subscriptions", path: "/under-construction", pro: false }
-    ],
-  },
-  /*  subItems: [{ name: "Customers", path: "/view-chit-customers", pro: false },
-    { name: "Chit Schemes", path: "/view-chit-scheme", pro: false },
-    { name: "Subscriptions", path: "/view-chit-subscription", pro: false }
-]*/
-  ...( ["ADMIN", "STAFF"].includes(userRole)
-          ? [{
-            icon: <GridIcon />,
-            name: "Update Today's Rate",
-            path: "/update-todays-rate",
-          }]
-          : []
-  ),
+    ...(["ADMIN", "STAFF"].includes(userRole)
+        ? [
+              {
+                  icon: <GridIcon />,
+                  name: "Sales",
+                  subItems: [
+                      {
+                          name: "Generate Bill",
+                          path: "/generate-sales-bill",
+                          pro: false,
+                      },
+                      {
+                          name: "View Bill",
+                          path: "/view-sales-bill",
+                          pro: false,
+                      },
+                  ],
+              },
+          ]
+        : []),
 
+    // =========================================================
+    // USER MANAGEMENT
+    // =========================================================
 
-  ...(userRole === "ADMIN"
-      ? [{
+    ...(userRole === "ADMIN"
+        ? [
+              {
+                  icon: <UserCircleIcon />,
+                  name: "Add/Modify User Profile",
+                  path: "/users",
+              },
+          ]
+        : []),
+
+    // =========================================================
+    // PROFILE
+    // =========================================================
+
+    {
         icon: <UserCircleIcon />,
-        name: "Add/Modify User Profile",
-        path: "/users",
-      }]
-      : []),
-
-
-
-
-  {
-    icon: <UserCircleIcon />,
-    name: "Profile",
-    path: "/profile",
-  },
-  /*{{
-     icon: <CalenderIcon />,
-     name: "Calendar",
-     path: "/calendar",
-   },
-  {
-    name: "Tables",
-    icon: <TableIcon />,
-    subItems: [{ name: "Basic Tables", path: "/basic-tables", pro: false }],
-  },
-  {
-    name: "Pages",
-    icon: <PageIcon />,
-    subItems: [
-      { name: "Blank Page", path: "/blank", pro: false },
-      { name: "404 Error", path: "/error-404", pro: false },
-    ],
-  },*/
-];
-
-const othersItems: NavItem[] = [
-  {
-    icon: <PieChartIcon />,
-    name: "Charts",
-    subItems: [
-      ...( ["ADMIN", "STAFF"].includes(userRole)
-          ? [
-            {
-              name: "Sales Chart",
-              path: "/under-construction",
-              pro: false,
-            }
-          ]
-          : []),
-      ...( ["ADMIN", "STAFF"].includes(userRole)
-          ? [
-            {
-              name: "Purchase Chart",
-              path: "/under-construction",
-              pro: false,
-            }
-          ]
-          : []),
-
-      /* /line-chart{ name: "Sales Chart", path: "/line-chart", pro: false },
-      { name: "Purchase Chart", path: "/line-chart", pro: false },*/
-      { name: "Gold/Silver Rate Chart", path: "/bar-chart", pro: false },
-    ],
-  },
-  /*{
-    icon: <BoxCubeIcon />,
-    name: "UI Elements",
-    subItems: [
-      { name: "Alerts", path: "/alerts", pro: false },
-      { name: "Avatar", path: "/avatars", pro: false },
-      { name: "Badge", path: "/badge", pro: false },
-      { name: "Buttons", path: "/buttons", pro: false },
-      { name: "Images", path: "/images", pro: false },
-      { name: "Videos", path: "/videos", pro: false },
-    ],
-  },
-  {
-    icon: <PlugInIcon />,
-    name: "Authentication",
-    subItems: [
-      { name: "Sign In", path: "/signin", pro: false },
-      { name: "Sign Up", path: "/signup", pro: false },
-    ],
-  },*/
+        name: "Profile",
+        path: "/profile",
+    },
 ];
 
 const AppSidebar: React.FC = () => {
-  const { isExpanded, isMobileOpen, isHovered, setIsHovered } = useSidebar();
-  const location = useLocation();
+    const {
+        isExpanded,
+        isMobileOpen,
+        isHovered,
+        setIsHovered,
+    } = useSidebar();
 
-  const [openSubmenu, setOpenSubmenu] = useState<{
-    type: "main" | "others";
-    index: number;
-  } | null>(null);
-  const [subMenuHeight, setSubMenuHeight] = useState<Record<string, number>>(
-    {}
-  );
-  const subMenuRefs = useRef<Record<string, HTMLDivElement | null>>({});
+    const location = useLocation();
 
-  // const isActive = (path: string) => location.pathname === path;
-  const isActive = useCallback(
-    (path: string) => location.pathname === path,
-    [location.pathname]
-  );
+    const [openSubmenu, setOpenSubmenu] = useState<number | null>(null);
 
-  useEffect(() => {
-    let submenuMatched = false;
-    ["main", "others"].forEach((menuType) => {
-      const items = menuType === "main" ? navItems : othersItems;
-      items.forEach((nav, index) => {
-        if (nav.subItems) {
-          nav.subItems.forEach((subItem) => {
-            if (isActive(subItem.path)) {
-              setOpenSubmenu({
-                type: menuType as "main" | "others",
-                index,
-              });
-              submenuMatched = true;
+    const [subMenuHeight, setSubMenuHeight] = useState<
+        Record<string, number>
+    >({});
+
+    const subMenuRefs = useRef<
+        Record<string, HTMLDivElement | null>
+    >({});
+
+    // =========================================================
+    // ACTIVE MENU
+    // =========================================================
+
+    const isActive = useCallback(
+        (path: string) => location.pathname === path,
+        [location.pathname]
+    );
+
+    // =========================================================
+    // OPEN SUBMENU BASED ON CURRENT ROUTE
+    // =========================================================
+
+    useEffect(() => {
+        let submenuIndex: number | null = null;
+
+        navItems.forEach((nav, index) => {
+            if (nav.subItems) {
+                nav.subItems.forEach((subItem) => {
+                    if (isActive(subItem.path)) {
+                        submenuIndex = index;
+                    }
+                });
             }
-          });
+        });
+
+        setOpenSubmenu(submenuIndex);
+    }, [location.pathname, isActive]);
+
+    // =========================================================
+    // SUBMENU HEIGHT
+    // =========================================================
+
+    useEffect(() => {
+        if (openSubmenu !== null) {
+            const key = `main-${openSubmenu}`;
+            const element = subMenuRefs.current[key];
+
+            if (element) {
+                setSubMenuHeight((previous) => ({
+                    ...previous,
+                    [key]: element.scrollHeight,
+                }));
+            }
         }
-      });
-    });
+    }, [openSubmenu]);
 
-    if (!submenuMatched) {
-      setOpenSubmenu(null);
-    }
-  }, [location, isActive]);
+    // =========================================================
+    // SUBMENU TOGGLE
+    // =========================================================
 
-  useEffect(() => {
-    if (openSubmenu !== null) {
-      const key = `${openSubmenu.type}-${openSubmenu.index}`;
-      if (subMenuRefs.current[key]) {
-        setSubMenuHeight((prevHeights) => ({
-          ...prevHeights,
-          [key]: subMenuRefs.current[key]?.scrollHeight || 0,
-        }));
-      }
-    }
-  }, [openSubmenu]);
+    const handleSubmenuToggle = (index: number) => {
+        setOpenSubmenu((previous) =>
+            previous === index ? null : index
+        );
+    };
 
-  const handleSubmenuToggle = (index: number, menuType: "main" | "others") => {
-    setOpenSubmenu((prevOpenSubmenu) => {
-      if (
-        prevOpenSubmenu &&
-        prevOpenSubmenu.type === menuType &&
-        prevOpenSubmenu.index === index
-      ) {
-        return null;
-      }
-      return { type: menuType, index };
-    });
-  };
+    // =========================================================
+    // MENU ITEMS
+    // =========================================================
 
-  const renderMenuItems = (items: NavItem[], menuType: "main" | "others") => (
-    <ul className="flex flex-col gap-4">
-      {items.map((nav, index) => (
-        <li key={nav.name}>
-          {nav.subItems ? (
-            <button
-              onClick={() => handleSubmenuToggle(index, menuType)}
-              className={`menu-item group ${
-                openSubmenu?.type === menuType && openSubmenu?.index === index
-                  ? "menu-item-active"
-                  : "menu-item-inactive"
-              } cursor-pointer ${
-                !isExpanded && !isHovered
-                  ? "lg:justify-center"
-                  : "lg:justify-start"
-              }`}
-            >
-              <span
-                className={`menu-item-icon-size  ${
-                  openSubmenu?.type === menuType && openSubmenu?.index === index
-                    ? "menu-item-icon-active"
-                    : "menu-item-icon-inactive"
-                }`}
-              >
-                {nav.icon}
-              </span>
-              {(isExpanded || isHovered || isMobileOpen) && (
-                <span className="menu-item-text">{nav.name}</span>
-              )}
-              {(isExpanded || isHovered || isMobileOpen) && (
-                <ChevronDownIcon
-                  className={`ml-auto w-5 h-5 transition-transform duration-200 ${
-                    openSubmenu?.type === menuType &&
-                    openSubmenu?.index === index
-                      ? "rotate-180 text-brand-500"
-                      : ""
-                  }`}
-                />
-              )}
-            </button>
-          ) : (
-            nav.path && (
-              <Link
-                to={nav.path}
-                className={`menu-item group ${
-                  isActive(nav.path) ? "menu-item-active" : "menu-item-inactive"
-                }`}
-              >
-                <span
-                  className={`menu-item-icon-size ${
-                    isActive(nav.path)
-                      ? "menu-item-icon-active"
-                      : "menu-item-icon-inactive"
-                  }`}
-                >
-                  {nav.icon}
-                </span>
-                {(isExpanded || isHovered || isMobileOpen) && (
-                  <span className="menu-item-text">{nav.name}</span>
-                )}
-              </Link>
-            )
-          )}
-          {nav.subItems && (isExpanded || isHovered || isMobileOpen) && (
+    const renderMenuItems = (items: NavItem[]) => (
+        <ul className="flex flex-col gap-1.5">
+
+            {items.map((nav, index) => (
+
+                <li key={nav.name}>
+
+                    {/* =================================================
+                        MENU WITH SUBMENU
+                    ================================================== */}
+
+                    {nav.subItems ? (
+                        <>
+
+                            <button
+                                type="button"
+                                onClick={() =>
+                                    handleSubmenuToggle(index)
+                                }
+                                className={`
+menu-item
+group
+w-full
+transition-colors
+duration-150
+${
+    openSubmenu === index
+        ? "menu-item-active"
+        : "menu-item-inactive"
+}
+${
+    !isExpanded &&
+    !isHovered
+        ? "lg:justify-center"
+        : "lg:justify-start"
+}
+`}
+                            >
+
+                                {/* Icon */}
+
+                                <span
+                                    className={`
+menu-item-icon-size
+${
+    openSubmenu === index
+        ? "menu-item-icon-active"
+        : "menu-item-icon-inactive"
+}
+`}
+                                >
+                                    {nav.icon}
+                                </span>
+
+                                {/* Menu Text */}
+
+                                {(isExpanded ||
+                                    isHovered ||
+                                    isMobileOpen) && (
+                                    <span className="menu-item-text">
+                                        {nav.name}
+                                    </span>
+                                )}
+
+                                {/* Chevron */}
+
+                                {(isExpanded ||
+                                    isHovered ||
+                                    isMobileOpen) && (
+                                    <ChevronDownIcon
+                                        className={`
+ml-auto
+h-5
+w-5
+transition-transform
+duration-200
+${
+    openSubmenu === index
+        ? "rotate-180 text-blue-600"
+        : "text-slate-400"
+}
+`}
+                                    />
+                                )}
+
+                            </button>
+
+                            {/* =================================================
+                                SUBMENU
+                            ================================================== */}
+
+                            {(isExpanded ||
+                                isHovered ||
+                                isMobileOpen) && (
+
+                                <div
+                                    ref={(element) => {
+                                        subMenuRefs.current[
+                                            `main-${index}`
+                                        ] = element;
+                                    }}
+                                    className="overflow-hidden transition-all duration-200"
+                                    style={{
+                                        height:
+                                            openSubmenu === index
+                                                ? `${
+    subMenuHeight[
+        `main-${index}`
+        ] || 0
+}px`
+                                                : "0px",
+                                    }}
+                                >
+
+                                    <ul className="ml-9 mt-1.5 space-y-0.5">
+
+                                        {nav.subItems.map(
+                                            (subItem) => (
+
+                                                <li
+                                                    key={
+                                                        subItem.name
+                                                    }
+                                                >
+
+                                                    <Link
+                                                        to={
+                                                            subItem.path
+                                                        }
+                                                        className={`
+menu-dropdown-item
+transition-colors
+duration-150
+${
+    isActive(
+        subItem.path
+    )
+        ? "menu-dropdown-item-active"
+        : "menu-dropdown-item-inactive"
+}
+`}
+                                                    >
+                                                        {subItem.name}
+                                                    </Link>
+
+                                                </li>
+
+                                            )
+                                        )}
+
+                                    </ul>
+
+                                </div>
+                            )}
+
+                        </>
+                    ) : (
+
+                        /* =================================================
+                           NORMAL MENU ITEM
+                        ================================================== */
+
+                        nav.path && (
+
+                            <Link
+                                to={nav.path}
+                                className={`
+menu-item
+group
+transition-colors
+duration-150
+${
+    isActive(nav.path)
+        ? "menu-item-active"
+        : "menu-item-inactive"
+}
+${
+    !isExpanded &&
+    !isHovered
+        ? "lg:justify-center"
+        : "lg:justify-start"
+}
+`}
+                            >
+
+                                {/* Icon */}
+
+                                <span
+                                    className={`
+menu-item-icon-size
+${
+    isActive(nav.path)
+        ? "menu-item-icon-active"
+        : "menu-item-icon-inactive"
+}
+`}
+                                >
+                                    {nav.icon}
+                                </span>
+
+                                {/* Text */}
+
+                                {(isExpanded ||
+                                    isHovered ||
+                                    isMobileOpen) && (
+
+                                    <span className="menu-item-text">
+                                        {nav.name}
+                                    </span>
+
+                                )}
+
+                            </Link>
+
+                        )
+                    )}
+
+                </li>
+
+            ))}
+
+        </ul>
+    );
+
+    // =========================================================
+    // SIDEBAR
+    // =========================================================
+
+    return (
+        <aside
+            className={`
+fixed
+left-0
+top-0
+z-50
+flex
+h-screen
+flex-col
+border-r
+border-slate-200
+bg-white
+px-4
+text-slate-700
+transition-all
+duration-300
+ease-in-out
+
+lg:translate-x-0
+
+${
+    isExpanded ||
+    isMobileOpen ||
+    isHovered
+        ? "w-[280px]"
+        : "w-[84px]"
+}
+
+${
+    isMobileOpen
+        ? "translate-x-0"
+        : "-translate-x-full"
+}
+`}
+            onMouseEnter={() =>
+                !isExpanded && setIsHovered(true)
+            }
+            onMouseLeave={() =>
+                setIsHovered(false)
+            }
+        >
+
+            {/* =====================================================
+                BRAND
+            ===================================================== */}
+
             <div
-              ref={(el) => {
-                subMenuRefs.current[`${menuType}-${index}`] = el;
-              }}
-              className="overflow-hidden transition-all duration-300"
-              style={{
-                height:
-                  openSubmenu?.type === menuType && openSubmenu?.index === index
-                    ? `${subMenuHeight[`${menuType}-${index}`]}px`
-                    : "0px",
-              }}
+                className={`
+flex
+h-20
+shrink-0
+items-center
+${
+    !isExpanded &&
+    !isHovered
+        ? "lg:justify-center"
+        : "justify-start"
+}
+`}
             >
-              <ul className="mt-2 space-y-1 ml-9">
-                {nav.subItems.map((subItem) => (
-                  <li key={subItem.name}>
-                    <Link
-                      to={subItem.path}
-                      className={`menu-dropdown-item ${
-                        isActive(subItem.path)
-                          ? "menu-dropdown-item-active"
-                          : "menu-dropdown-item-inactive"
-                      }`}
-                    >
-                      {subItem.name}
-                      <span className="flex items-center gap-1 ml-auto">
-                        {subItem.new && (
-                          <span
-                            className={`ml-auto ${
-                              isActive(subItem.path)
-                                ? "menu-dropdown-badge-active"
-                                : "menu-dropdown-badge-inactive"
-                            } menu-dropdown-badge`}
-                          >
-                            new
-                          </span>
-                        )}
-                        {subItem.pro && (
-                          <span
-                            className={`ml-auto ${
-                              isActive(subItem.path)
-                                ? "menu-dropdown-badge-active"
-                                : "menu-dropdown-badge-inactive"
-                            } menu-dropdown-badge`}
-                          >
-                            pro
-                          </span>
-                        )}
-                      </span>
-                    </Link>
-                  </li>
-                ))}
-              </ul>
+
+                <Link
+                    to="/home"
+                    className="w-full"
+                >
+
+                    {isExpanded ||
+                    isHovered ||
+                    isMobileOpen ? (
+
+                        <div
+                            className="
+                                rounded-xl
+                                border
+                                border-slate-200
+                                bg-slate-50
+                                px-4
+                                py-3
+                                text-center
+                                shadow-sm
+                            "
+                        >
+
+                            <h1
+                                className="
+                                    truncate
+                                    text-lg
+                                    font-semibold
+                                    tracking-tight
+                                    text-slate-800
+                                "
+                            >
+                                {SHOP_NAME}
+                            </h1>
+
+                            <p
+                                className="
+                                    mt-0.5
+                                    text-xs
+                                    font-medium
+                                    text-slate-500
+                                "
+                            >
+                                Billing System
+                            </p>
+
+                        </div>
+
+                    ) : (
+
+                        <div className="flex justify-center">
+
+                            <img
+                                src="/images/logo/logo.jpeg"
+                                alt={`${SHOP_NAME} logo`}
+                                width={38}
+                                height={38}
+                                className="
+                                    h-10
+                                    w-10
+                                    rounded-lg
+                                    border
+                                    border-slate-200
+                                    object-cover
+                                    shadow-sm
+                                "
+                            />
+
+                        </div>
+
+                    )}
+
+                </Link>
+
             </div>
-          )}
-        </li>
-      ))}
-    </ul>
-  );
 
-  return (
-    <aside
-      className={`fixed mt-16 flex flex-col lg:mt-0 top-0 px-5 left-0 bg-gradient-to-b from-yellow-50 via-white to-yellow-100 dark:border-gray-800 text-gray-900 h-screen transition-all duration-300 ease-in-out z-50 border-r border-gray-200 
-        ${
-          isExpanded || isMobileOpen
-            ? "w-[290px]"
-            : isHovered
-            ? "w-[290px]"
-            : "w-[90px]"
-        }
-        ${isMobileOpen ? "translate-x-0" : "-translate-x-full"}
-        lg:translate-x-0`}
-      onMouseEnter={() => !isExpanded && setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-    >
-      <div
-        className={`py-8 flex ${
-          !isExpanded && !isHovered ? "lg:justify-center" : "justify-start"
-        }`}
-      >
-        <Link to="/home">
-          {isExpanded || isHovered || isMobileOpen ? (
-            <>
-          {/*  <div className="mx-auto mb-10 w-full max-w-60 rounded-2xl bg-gray-50 px-4 py-5 text-center dark:bg-white/[0.03]">
-                <h2 className="mb-3 text-lg font-bold text-gray-900 dark:text-white">
-                    {SHOP_NAME}
-                </h2>
-            </div>*/}
-{/*
-                <div className="mx-auto mb-8 w-full max-w-xl rounded-2xl border border-yellow-200 bg-gradient-to-r from-yellow-50 via-white to-yellow-50 p-6 text-center shadow-lg">
-*/}
-                   {/* <h1 className="text-3xl font-bold tracking-wide text-yellow-700">
-                        {SHOP_NAME}
-                    </h1>*/}
-                   {/* <div className="flex flex-col items-center">
-                        <img
-                            src="/images/logo/jayalakshmi-logo.png"
-                            className="w-20 h-20 rounded-full shadow-lg"
-                        />
+            {/* =====================================================
+                NAVIGATION
+            ===================================================== */}
 
-                        <h1 className="mt-3 text-2xl font-bold text-yellow-700">
-                            {SHOP_NAME}
-                        </h1>
+            <div
+                className="
+                    flex
+                    flex-1
+                    flex-col
+                    overflow-y-auto
+                    pb-4
+                    no-scrollbar
+                "
+            >
 
-                        <p className="text-xs text-gray-500 tracking-widest">
-                            Gold • Silver
-                        </p>
-                    </div>*/}
-                    <div className="rounded-2xl bg-gradient-to-r from-yellow-400 via-yellow-200 to-yellow-500 p-5 shadow-xl border border-yellow-600 text-center">
+                <nav>
 
-                        <h1 className="text-2xl font-bold text-gray-900">
-                            {SHOP_NAME}
-                        </h1>
+                    {/* Section Heading */}
 
-                        <p className="text-sm text-gray-800">
-                            Gold • Silver
-                          {/*  Since 1998*/}
-                        </p>
+                    <div className="mb-3">
+
+                        <h2
+                            className={`
+flex
+items-center
+text-[11px]
+font-semibold
+uppercase
+tracking-wider
+text-slate-400
+${
+    !isExpanded &&
+    !isHovered
+        ? "lg:justify-center"
+        : "justify-start"
+}
+`}
+                        >
+
+                            {isExpanded ||
+                            isHovered ||
+                            isMobileOpen ? (
+
+                                "Menu"
+
+                            ) : (
+
+                                <HorizontaLDots className="size-5" />
+
+                            )}
+
+                        </h2>
 
                     </div>
 
-                  {/*  <p className="mt-2 text-sm text-gray-600">
-                        Trusted Gold & Silver Jewellery
-                    </p>*/}
+                    {/* Menu */}
 
-              {/*      <div className="mx-auto mt-4 h-1 w-24 rounded-full bg-yellow-500"></div>*/}
-              {/*  </div>*/}
-            </>
-          ) : (
-            <img
-              src="/images/logo/logo.jpeg"
-              alt="Logo"
-              width={32}
-              height={32}
-            />
-          )}
-        </Link>
-      </div>
-      <div className="flex flex-col overflow-y-auto duration-300 ease-linear no-scrollbar">
-        <nav className="mb-6">
-          <div className="flex flex-col gap-4">
-            <div>
-              <h2
-                className={`mb-4 text-xs uppercase flex leading-[20px] text-gray-400 ${
-                  !isExpanded && !isHovered
-                    ? "lg:justify-center"
-                    : "justify-start"
-                }`}
-              >
-                {isExpanded || isHovered || isMobileOpen ? (
-                  "Menu"
-                ) : (
-                  <HorizontaLDots className="size-6" />
-                )}
-              </h2>
-              {renderMenuItems(navItems, "main")}
+                    {renderMenuItems(navItems)}
+
+                </nav>
+
+                {/* =================================================
+                    SIDEBAR WIDGET
+                ================================================== */}
+
+                {isExpanded ||
+                isHovered ||
+                isMobileOpen ? (
+                    <div className="mt-auto pt-4">
+                        <SidebarWidget />
+                    </div>
+                ) : null}
+
             </div>
-            <div className="">
-              <h2
-                className={`mb-4 text-xs uppercase flex leading-[20px] text-gray-400 ${
-                  !isExpanded && !isHovered
-                    ? "lg:justify-center"
-                    : "justify-start"
-                }`}
-              >
-                {isExpanded || isHovered || isMobileOpen ? (
-                  "Others"
-                ) : (
-                  <HorizontaLDots />
-                )}
-              </h2>
-              {renderMenuItems(othersItems, "others")}
-            </div>
-          </div>
-        </nav>
-        {isExpanded || isHovered || isMobileOpen ? <SidebarWidget /> : null}
-      </div>
-    </aside>
-  );
+
+        </aside>
+    );
 };
 
 export default AppSidebar;

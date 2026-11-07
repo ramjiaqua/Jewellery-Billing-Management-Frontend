@@ -7,16 +7,15 @@ import {
 } from "../ui/table";
 import { useEffect, useState } from "react";
 import api from "../../common/axiosConfig.tsx";
-import {useModal} from "../../hooks/useModal.ts";
-import {Modal} from "../ui/modal";
+import { useModal } from "../../hooks/useModal.ts";
+import { Modal } from "../ui/modal";
 import Label from "../form/Label.tsx";
 import Input from "../form/input/InputField.tsx";
 import Button from "../ui/button/Button.tsx";
 import Badge from "../ui/badge/Badge.tsx";
-import {SHOP_NAME} from "../../common/constants.tsx";
+import { SHOP_NAME } from "../../common/constants.tsx";
 
 export default function ViewUsersProfile() {
-
     const emptyUser = {
         id: "",
         username: "",
@@ -31,24 +30,25 @@ export default function ViewUsersProfile() {
         enddate: "",
         referredby: "",
     };
+
     const roles = ["ADMIN", "STAFF", "AGENT"];
     const status = ["Active", "Inactive"];
 
     const [users, setUsers] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [isEditMode, setIsEditMode] = useState(false);
-    const [selectedUser, setSelectedUser] =  useState<any>(emptyUser);
+    const [selectedUser, setSelectedUser] = useState<any>(emptyUser);
+
     const { isOpen, openModal, closeModal } = useModal();
 
     useEffect(() => {
         fetchUsers();
     }, []);
 
-
     const fetchUsers = async () => {
         try {
             const response = await api.get("/api/users");
-console.log(response);
+            console.log(response);
             setUsers(response.data);
         } catch (error) {
             console.error("Error fetching users:", error);
@@ -59,7 +59,6 @@ console.log(response);
 
     const handleSave = async () => {
         try {
-
             if (isEditMode) {
                 await api.put(
                     `/api/users/${selectedUser.id}`,
@@ -74,559 +73,636 @@ console.log(response);
 
             fetchUsers();
             closeModal();
-
         } catch (error) {
             console.error(error);
         }
     };
 
-
     if (loading) {
         return (
-            <div className="p-4 text-gray-500">
-                Loading ...
+            <div className="min-h-screen bg-slate-50 p-6">
+                <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+                    <div className="flex items-center gap-3">
+                        <div className="h-5 w-5 animate-spin rounded-full border-2 border-slate-300 border-t-blue-600" />
+                        <span className="text-sm text-slate-500">
+                            Loading users...
+                        </span>
+                    </div>
+                </div>
             </div>
         );
     }
 
     return (
         <>
-            <div className="
-rounded-3xl
-border
-border-yellow-300
-bg-gradient-to-br
-from-[#FFFDF7]
-via-white
-to-[#FFF8E8]
-shadow-xl
-overflow-hidden
-">
-                <div className="flex items-center justify-between p-6 border-b border-yellow-200 bg-gradient-to-r from-yellow-500 via-amber-500 to-yellow-600">
+            <div className="min-h-screen bg-slate-50">
 
-                    <div>
-                        <h2 className="text-3xl font-bold text-white">
-                            👥 User Management
-                        </h2>
+                {/* =====================================================
+                    PAGE HEADER
+                ====================================================== */}
+                <div className="mb-6 rounded-xl border border-slate-200 bg-white px-6 py-5 shadow-sm">
 
-                        <p className="mt-1 text-yellow-100">
-                            Manage all staff and administrators
-                        </p>
-                    </div>
+                    <div className="flex items-center justify-between gap-4">
 
-                    <Button
-                        onClick={() => {
-                            setSelectedUser(emptyUser);
-                            setIsEditMode(false);
-                            openModal();
-                        }}
-                        className="
- flex
-    items-center
-    gap-2
-    rounded-xl
-    bg-white
-    px-5
-    py-3
-    text-yellow-700
-    font-semibold
-    shadow-lg
-    hover:bg-yellow-100
-    transition-all
-    duration-300
-    "
-                    >
-                        ➕ Add User
-                    </Button>
+                        <div>
+                            <div className="flex items-center gap-3">
 
-                </div>
-
-            <div className="max-w-full overflow-x-auto">
-                <Table>
-                    {/* Table Header */}
-                    <TableHeader className="bg-gradient-to-r from-yellow-500 to-amber-600">
-                        <TableRow>
-                            <TableCell className="px-5 py-4 text-white text-start font-semibold uppercase tracking-wider"
-                                isHeader
-                            >
-                                Id
-                            </TableCell>
-                            <TableCell
-                                isHeader
-                                className="px-5 py-4 text-white text-start font-semibold uppercase tracking-wider"
-                            >
-                                User Name
-                            </TableCell>
-                            <TableCell
-                                isHeader
-                                className="px-5 py-4 text-white text-start font-semibold uppercase tracking-wider"
-                            >
-                                Name
-                            </TableCell>
-                            <TableCell
-                                isHeader
-                                className="px-5 py-4 text-white text-start font-semibold uppercase tracking-wider"
-                            >
-                                Address
-                            </TableCell>
-                            <TableCell
-                                isHeader
-                                className="px-5 py-4 text-white text-start font-semibold uppercase tracking-wider"
-                            >
-                                Phone Number
-                            </TableCell>
-                            <TableCell
-                                isHeader
-                                className="px-5 py-4 text-white text-start font-semibold uppercase tracking-wider"
-                            >
-                                Email Id
-                            </TableCell>
-
-                            <TableCell
-                                isHeader
-                                className="px-5 py-4 text-white text-start font-semibold uppercase tracking-wider"
-                            >
-                                Role
-                            </TableCell>
-
-                            <TableCell
-                                isHeader
-                                className="px-5 py-4 text-white text-start font-semibold uppercase tracking-wider"
-                            >
-                                Status
-                            </TableCell>
-                            <TableCell
-                                isHeader
-                                className="px-5 py-4 text-white text-start font-semibold uppercase tracking-wider"
-                            >
-                                Service Start Date
-                            </TableCell>
-
-                            <TableCell
-                                isHeader
-                                className="px-5 py-4 text-white text-start font-semibold uppercase tracking-wider"
-                            >
-                                Service End Date
-                            </TableCell>
-
-                            <TableCell
-                                isHeader
-                                className="px-5 py-4 text-white text-start font-semibold uppercase tracking-wider"
-                            >
-                                Referred By
-                            </TableCell>
-
-
-
-
-                        </TableRow>
-                    </TableHeader>
-
-                    <TableBody className="divide-y divide-gray-100 dark:divide-white/[0.05]">
-                        {users.map((user) => (
-                            <TableRow className="hover:bg-yellow-50 transition-all duration-200 "key={user.id}>
-                                <TableCell
-                                    className="px-4 py-3 text-gray-700 font-medium text-start text-theme-sm dark:text-gray-40">
-                                    {user.id}
-                                </TableCell>
-                                <TableCell
-                                    className="px-4 py-3 text-gray-700 font-medium text-start text-theme-sm dark:text-gray-40">
-                                    {user.username}
-                                </TableCell>
-                                <TableCell
-                                    className="px-4 py-3 text-gray-700 font-medium text-start text-theme-sm dark:text-gray-40">
-                                    {user.fullname}
-                                </TableCell>
-                                <TableCell
-                                    className="px-4 py-3 text-gray-700 font-medium text-start text-theme-sm dark:text-gray-400">
-                                    {user.address}
-                                </TableCell>
-                                <TableCell
-                                    className="px-4 py-3 text-gray-700 font-medium text-start text-theme-sm dark:text-gray-400">
-                                    {user.phonenumber}
-                                </TableCell>
-                                <TableCell
-                                    className="px-4 py-3 text-gray-700 font-medium text-start text-theme-sm dark:text-gray-400">
-                                    {user.emailid}
-                                </TableCell>
-                                <TableCell
-                                    className="px-4 py-3 text-gray-700 font-medium text-start text-theme-sm dark:text-gray-400">
-                                    {user.role}
-                                </TableCell>
-                                <TableCell
-                                    className="px-4 py-3 text-gray-700 font-medium text-start text-theme-sm dark:text-gray-400">
-
-                                    <Badge
-                                        size="sm"
-                                        color={
-                                            (() => {
-                                                if (user.status?.toLowerCase() === "active")
-                                                    return "success";
-
-                                                if (user.status?.toLowerCase() === "inactive")
-                                                    return "error";
-
-                                                return "warning";
-                                            })()
-                                        }
-                                    >
-                                        {user.status}
-                                    </Badge>
-
-
-
-                                </TableCell>
-                                <TableCell
-                                    className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
-                                    {user.startdate}
-                                </TableCell>
-                                <TableCell
-                                    className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
-                                    {user.enddate}
-                                </TableCell>
-                                <TableCell
-                                    className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
-                                    {user.referredby}
-                                </TableCell>
-
-                                <TableCell
-                                    className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
-
-                                <button
-                                    onClick={() => {
-                                        setSelectedUser(user);
-                                        setIsEditMode(true);
-                                        openModal();
-                                    }}
-                                    className="
-inline-flex
-items-center
-gap-2
-rounded-xl
-bg-gradient-to-r
-from-yellow-500
-to-amber-600
-px-4
-py-2
-text-white
-font-semibold
-shadow-md
-hover:shadow-xl
-hover:scale-105
-transition-all
-"                                >
+                                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-50 text-blue-600">
                                     <svg
-                                        className="fill-current"
-                                        width="18"
-                                        height="18"
-                                        viewBox="0 0 18 18"
+                                        className="h-5 w-5"
                                         fill="none"
-                                        xmlns="http://www.w3.org/2000/svg"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24"
                                     >
                                         <path
-                                            fillRule="evenodd"
-                                            clipRule="evenodd"
-                                            d="M15.0911 2.78206C14.2125 1.90338 12.7878 1.90338 11.9092 2.78206L4.57524 10.116C4.26682 10.4244 4.0547 10.8158 3.96468 11.2426L3.31231 14.3352C3.25997 14.5833 3.33653 14.841 3.51583 15.0203C3.69512 15.1996 3.95286 15.2761 4.20096 15.2238L7.29355 14.5714C7.72031 14.4814 8.11172 14.2693 8.42013 13.9609L15.7541 6.62695C16.6327 5.74827 16.6327 4.32365 15.7541 3.44497L15.0911 2.78206ZM12.9698 3.84272C13.2627 3.54982 13.7376 3.54982 14.0305 3.84272L14.6934 4.50563C14.9863 4.79852 14.9863 5.2734 14.6934 5.56629L14.044 6.21573L12.3204 4.49215L12.9698 3.84272ZM11.2597 5.55281L5.6359 11.1766C5.53309 11.2794 5.46238 11.4099 5.43238 11.5522L5.01758 13.5185L6.98394 13.1037C7.1262 13.0737 7.25666 13.003 7.35947 12.9002L12.9833 7.27639L11.2597 5.55281Z"
-                                            fill=""
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            strokeWidth={2}
+                                            d="M17 20h5v-2a4 4 0 00-4-4h-1m-4 6H3v-2a4 4 0 014-4h6a4 4 0 014 4v2zm-3-10a4 4 0 11-8 0 4 4 0 018 0zm6 1a3 3 0 10-3-3"
                                         />
                                     </svg>
-                                    Edit
-                                </button>
+                                </div>
 
-                                </TableCell>
+                                <div>
+                                    <h1 className="text-2xl font-semibold text-slate-800">
+                                        User Management
+                                    </h1>
 
+                                    <p className="mt-0.5 text-sm text-slate-500">
+                                        Manage staff, administrators and agents
+                                    </p>
+                                </div>
 
-
-
-
-                            </TableRow>
-                        ))}
-                    </TableBody>
-                </Table>
-            </div>
-
-        </div>
-
-    <Modal isOpen={isOpen} onClose={closeModal} className="max-w-[700px] m-4">
-        <div className="
-rounded-3xl
-border
-border-yellow-300
-bg-gradient-to-br
-from-white
-via-yellow-50
-to-yellow-100
-shadow-2xl
-">
-            <div className="px-2 pr-14">
-                <h2 className="text-3xl font-bold text-yellow-700">
-
-                    👤 {isEditMode ? "Update User" : "Create User"}
-
-                </h2>
-                <p className="text-gray-600 mt-2">
-
-                    {SHOP_NAME} Staff Management
-
-                </p>
-            </div>
-            <form className="flex flex-col">
-                <div className="px-2 overflow-y-auto custom-scrollbar">
-                    <div className="grid grid-cols-1 gap-x-6 gap-y-5 lg:grid-cols-2">
-
-                        <div>
-                            <Label className="font-semibold text-yellow-700">Full Name</Label>
-                            <Input className="
-rounded-xl
-border-yellow-300
-bg-yellow-50
-focus:border-yellow-500
-focus:ring-yellow-300
-"
-                                type="text"
-                                value={selectedUser.fullname || ""}
-                                onChange={(e) =>
-                                    setSelectedUser({
-                                        ...selectedUser,
-                                        fullname: e.target.value
-                                    })
-                                }
-                            />
+                            </div>
                         </div>
 
-                        <div>
-                            <Label className="font-semibold text-yellow-700">Username</Label>
-                            <Input className="
-rounded-xl
-border-yellow-300
-bg-yellow-50
-focus:border-yellow-500
-focus:ring-yellow-300
-"
-                                type="text"
-                                value={selectedUser.username || ""}
-                                onChange={(e) =>
-                                    setSelectedUser({
-                                        ...selectedUser,
-                                        username: e.target.value
-                                    })
-                                }
-                            />
-                        </div>
-                        <div>
-                            <Label className="font-semibold text-yellow-700">Password</Label>
-                            <Input className="
-rounded-xl
-border-yellow-300
-bg-yellow-50
-focus:border-yellow-500
-focus:ring-yellow-300
-"
-                                type="password"
-                                value={selectedUser.password || ""}
-                                onChange={(e) =>
-                                    setSelectedUser({
-                                        ...selectedUser,
-                                        password: e.target.value
-                                    })
-                                }
-                            />
-                        </div>
-                        <div>
-                            <Label className="font-semibold text-yellow-700">Address</Label>
-                            <Input className="
-rounded-xl
-border-yellow-300
-bg-yellow-50
-focus:border-yellow-500
-focus:ring-yellow-300
-"
-                                type="text"
-                                value={selectedUser.address || ""}
-                                onChange={(e) =>
-                                    setSelectedUser({
-                                        ...selectedUser,
-                                        address: e.target.value
-                                    })
-                                }
-                            />
+                        <Button
+                            onClick={() => {
+                                setSelectedUser({ ...emptyUser });
+                                setIsEditMode(false);
+                                openModal();
+                            }}
+                            className="rounded-lg bg-blue-600 px-5 text-white shadow-sm transition-colors hover:bg-blue-700"
+                        >
+                            + Add User
+                        </Button>
+
+                    </div>
+
+                </div>
+
+
+                {/* =====================================================
+                    USER TABLE
+                ====================================================== */}
+                <div className="rounded-xl border border-slate-200 bg-white shadow-sm">
+
+                    <div className="p-5">
+
+                        <div className="mb-4">
+                            <h2 className="text-lg font-semibold text-slate-800">
+                                Users
+                            </h2>
+
+                            <p className="mt-0.5 text-sm text-slate-500">
+                                View and manage registered users
+                            </p>
                         </div>
 
-                        <div>
-                            <Label className="font-semibold text-yellow-700">Phone Number</Label>
-                            <Input className="
-rounded-xl
-border-yellow-300
-bg-yellow-50
-focus:border-yellow-500
-focus:ring-yellow-300
-"
-                                type="text"
-                                value={selectedUser.phonenumber || ""}
-                                onChange={(e) =>
-                                    setSelectedUser({
-                                        ...selectedUser,
-                                        phonenumber: e.target.value
-                                    })
-                                }
-                            />
-                        </div>
+                        <div className="overflow-x-auto rounded-lg border border-slate-200">
 
-                        <div>
-                            <Label className="font-semibold text-yellow-700">Email</Label>
-                            <Input className="
-rounded-xl
-border-yellow-300
-bg-yellow-50
-focus:border-yellow-500
-focus:ring-yellow-300
-"
-                                type="email"
-                                value={selectedUser.emailid || ""}
-                                onChange={(e) =>
-                                    setSelectedUser({
-                                        ...selectedUser,
-                                        emailid: e.target.value
-                                    })
-                                }
-                            />
-                        </div>
+                            <Table>
 
-                        <div>
-                            <Label className="font-semibold text-yellow-700">Role</Label>
-                         {/*   <Input
-                                type="text"
-                                value={selectedUser.role || ""}
-                                onChange={(e) =>
-                                    setSelectedUser({
-                                        ...selectedUser,
-                                        role: e.target.value
-                                    })
-                                }
-                            />*/}
-                            <select
-                                value={selectedUser.role || ""}
-                                onChange={(e) =>
-                                    setSelectedUser({
-                                        ...selectedUser,
-                                        role: e.target.value
-                                    })
-                                }
-                                className="
-h-11
-w-full
-rounded-xl
-border
-border-yellow-300
-bg-yellow-50
-px-4
-focus:border-yellow-500
-focus:ring-2
-focus:ring-yellow-300
-"
-                            >
-                                <option value="">Select Role</option>
+                                {/* TABLE HEADER */}
+                                <TableHeader className="bg-slate-100">
 
-                                {roles.map((role) => (
-                                    <option key={role} value={role}>
-                                        {role}
-                                    </option>
-                                ))}
-                            </select>
-                        </div>
+                                    <TableRow>
 
-                        <div>
-                            <Label className="font-semibold text-yellow-700">Status</Label>
+                                        <TableCell
+                                            isHeader
+                                            className="whitespace-nowrap px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-600"
+                                        >
+                                            ID
+                                        </TableCell>
 
-                            <select
-                                value={selectedUser.status || ""}
-                                onChange={(e) =>
-                                    setSelectedUser({
-                                        ...selectedUser,
-                                        status: e.target.value
-                                    })
-                                }
-                                className="
-h-11
-w-full
-rounded-xl
-border
-border-yellow-300
-bg-yellow-50
-px-4
-focus:border-yellow-500
-focus:ring-2
-focus:ring-yellow-300
-"
-                            >
-                                <option value="">Select Status</option>
+                                        <TableCell
+                                            isHeader
+                                            className="whitespace-nowrap px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-600"
+                                        >
+                                            Username
+                                        </TableCell>
 
-                                {status.map((s) => (
-                                    <option key={s} value={s}>
-                                        {s}
-                                    </option>
-                                ))}
-                            </select>
-                        </div>
+                                        <TableCell
+                                            isHeader
+                                            className="whitespace-nowrap px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-600"
+                                        >
+                                            Name
+                                        </TableCell>
 
-                        <div>
-                            <Label className="font-semibold text-yellow-700">Referred By</Label>
-                            <Input className="
-rounded-xl
-border-yellow-300
-bg-yellow-50
-focus:border-yellow-500
-focus:ring-yellow-300
-"
-                                type="test"
-                                value={selectedUser.referredby || ""}
-                                onChange={(e) =>
-                                    setSelectedUser({
-                                        ...selectedUser,
-                                        referredby: e.target.value
-                                    })
-                                }
-                            />
+                                        <TableCell
+                                            isHeader
+                                            className="whitespace-nowrap px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-600"
+                                        >
+                                            Address
+                                        </TableCell>
+
+                                        <TableCell
+                                            isHeader
+                                            className="whitespace-nowrap px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-600"
+                                        >
+                                            Phone Number
+                                        </TableCell>
+
+                                        <TableCell
+                                            isHeader
+                                            className="whitespace-nowrap px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-600"
+                                        >
+                                            Email
+                                        </TableCell>
+
+                                        <TableCell
+                                            isHeader
+                                            className="whitespace-nowrap px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-600"
+                                        >
+                                            Role
+                                        </TableCell>
+
+                                        <TableCell
+                                            isHeader
+                                            className="whitespace-nowrap px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-600"
+                                        >
+                                            Status
+                                        </TableCell>
+
+                                        <TableCell
+                                            isHeader
+                                            className="whitespace-nowrap px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-600"
+                                        >
+                                            Service Start
+                                        </TableCell>
+
+                                        <TableCell
+                                            isHeader
+                                            className="whitespace-nowrap px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-600"
+                                        >
+                                            Service End
+                                        </TableCell>
+
+                                        <TableCell
+                                            isHeader
+                                            className="whitespace-nowrap px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-600"
+                                        >
+                                            Referred By
+                                        </TableCell>
+
+                                        <TableCell
+                                            isHeader
+                                            className="whitespace-nowrap px-4 py-3 text-center text-xs font-semibold uppercase tracking-wide text-slate-600"
+                                        >
+                                            Action
+                                        </TableCell>
+
+                                    </TableRow>
+
+                                </TableHeader>
+
+
+                                {/* TABLE BODY */}
+                                <TableBody className="divide-y divide-slate-100 bg-white">
+
+                                    {users.length === 0 ? (
+
+                                        <TableRow>
+
+                                            <TableCell
+                                                className="px-4 py-10 text-center text-sm text-slate-500"
+                                            >
+                                                No users found
+                                            </TableCell>
+
+                                        </TableRow>
+
+                                    ) : (
+
+                                        users.map((user) => (
+
+                                            <TableRow
+                                                key={user.id}
+                                                className="transition-colors hover:bg-slate-50"
+                                            >
+
+                                                <TableCell className="whitespace-nowrap px-4 py-3 text-sm font-medium text-slate-700">
+                                                    {user.id}
+                                                </TableCell>
+
+                                                <TableCell className="whitespace-nowrap px-4 py-3 text-sm font-medium text-slate-800">
+                                                    {user.username}
+                                                </TableCell>
+
+                                                <TableCell className="whitespace-nowrap px-4 py-3 text-sm text-slate-700">
+                                                    {user.fullname}
+                                                </TableCell>
+
+                                                <TableCell className="px-4 py-3 text-sm text-slate-600">
+                                                    {user.address}
+                                                </TableCell>
+
+                                                <TableCell className="whitespace-nowrap px-4 py-3 text-sm text-slate-600">
+                                                    {user.phonenumber}
+                                                </TableCell>
+
+                                                <TableCell className="px-4 py-3 text-sm text-slate-600">
+                                                    {user.emailid}
+                                                </TableCell>
+
+                                                <TableCell className="whitespace-nowrap px-4 py-3 text-sm text-slate-600">
+                                                    {user.role}
+                                                </TableCell>
+
+                                                <TableCell className="px-4 py-3">
+
+                                                    <Badge
+                                                        size="sm"
+                                                        color={
+                                                            user.status?.toLowerCase() === "active"
+                                                                ? "success"
+                                                                : user.status?.toLowerCase() === "inactive"
+                                                                    ? "error"
+                                                                    : "warning"
+                                                        }
+                                                    >
+                                                        {user.status}
+                                                    </Badge>
+
+                                                </TableCell>
+
+                                                <TableCell className="whitespace-nowrap px-4 py-3 text-sm text-slate-500">
+                                                    {user.startdate}
+                                                </TableCell>
+
+                                                <TableCell className="whitespace-nowrap px-4 py-3 text-sm text-slate-500">
+                                                    {user.enddate}
+                                                </TableCell>
+
+                                                <TableCell className="px-4 py-3 text-sm text-slate-500">
+                                                    {user.referredby}
+                                                </TableCell>
+
+                                                <TableCell className="px-4 py-3">
+
+                                                    <div className="flex justify-center">
+
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => {
+                                                                setSelectedUser(user);
+                                                                setIsEditMode(true);
+                                                                openModal();
+                                                            }}
+                                                            className="rounded-md border border-blue-200 bg-blue-50 px-3 py-1.5 text-xs font-medium text-blue-700 transition-colors hover:bg-blue-100"
+                                                        >
+                                                            <span className="flex items-center gap-1.5">
+
+                                                                <svg
+                                                                    className="h-3.5 w-3.5"
+                                                                    fill="none"
+                                                                    stroke="currentColor"
+                                                                    viewBox="0 0 24 24"
+                                                                >
+                                                                    <path
+                                                                        strokeLinecap="round"
+                                                                        strokeLinejoin="round"
+                                                                        strokeWidth={2}
+                                                                        d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.5-9.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 8.5-8.5z"
+                                                                    />
+                                                                </svg>
+
+                                                                Edit
+
+                                                            </span>
+                                                        </button>
+
+                                                    </div>
+
+                                                </TableCell>
+
+                                            </TableRow>
+
+                                        ))
+
+                                    )}
+
+                                </TableBody>
+
+                            </Table>
+
                         </div>
 
                     </div>
+
                 </div>
 
-                <div className="flex items-center gap-3 px-2 mt-6 lg:justify-end">
-                    <Button
-                        variant="outline"
-                        className="
-border-yellow-400
-text-yellow-700
-hover:bg-yellow-100
-"
+            </div>
 
-                        size="sm"
-                        onClick={closeModal}
-                    >
-                        Close
-                    </Button>
 
-                    <Button
-                        className="
-bg-gradient-to-r
-from-yellow-500
-to-amber-600
-text-white
-shadow-lg
-hover:shadow-xl
-"
+            {/* =====================================================
+                USER MODAL
+            ====================================================== */}
+            <Modal
+                isOpen={isOpen}
+                onClose={closeModal}
+                className="max-w-[700px] m-4"
+            >
 
-                        size="sm"
-                        onClick={handleSave}
-                    >
-                        {isEditMode ? "Save Changes" : "Add User"}
-                    </Button>
+                <div className="rounded-xl border border-slate-200 bg-white shadow-xl">
+
+                    {/* MODAL HEADER */}
+                    <div className="border-b border-slate-200 px-6 py-5">
+
+                        <div className="flex items-center gap-3">
+
+                            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-50 text-blue-600">
+
+                                <svg
+                                    className="h-5 w-5"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24"
+                                >
+                                    <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        strokeWidth={2}
+                                        d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2m8-8a4 4 0 100-8 4 4 0 000 8zm6-3a3 3 0 100-6 3 3 0 000 6zm0 0v1m0 4v1m-2-3h4"
+                                    />
+                                </svg>
+
+                            </div>
+
+                            <div>
+
+                                <h2 className="text-xl font-semibold text-slate-800">
+                                    {isEditMode ? "Update User" : "Create User"}
+                                </h2>
+
+                                <p className="mt-0.5 text-sm text-slate-500">
+                                    {SHOP_NAME} User Management
+                                </p>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    {/* FORM */}
+                    <form className="flex flex-col">
+
+                        <div className="max-h-[65vh] overflow-y-auto px-6 py-5 custom-scrollbar">
+
+                            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+
+                                {/* FULL NAME */}
+                                <div>
+                                    <Label className="mb-1.5 block text-sm font-medium text-slate-700">
+                                        Full Name
+                                    </Label>
+
+                                    <Input
+                                        type="text"
+                                        value={selectedUser.fullname || ""}
+                                        onChange={(e) =>
+                                            setSelectedUser({
+                                                ...selectedUser,
+                                                fullname: e.target.value,
+                                            })
+                                        }
+                                        className="rounded-lg border-slate-300 bg-white focus:border-blue-500 focus:ring-blue-500"
+                                        placeholder="Enter full name"
+                                    />
+                                </div>
+
+
+                                {/* USERNAME */}
+                                <div>
+                                    <Label className="mb-1.5 block text-sm font-medium text-slate-700">
+                                        Username
+                                    </Label>
+
+                                    <Input
+                                        type="text"
+                                        value={selectedUser.username || ""}
+                                        onChange={(e) =>
+                                            setSelectedUser({
+                                                ...selectedUser,
+                                                username: e.target.value,
+                                            })
+                                        }
+                                        className="rounded-lg border-slate-300 bg-white focus:border-blue-500 focus:ring-blue-500"
+                                        placeholder="Enter username"
+                                    />
+                                </div>
+
+
+                                {/* PASSWORD */}
+                                <div>
+                                    <Label className="mb-1.5 block text-sm font-medium text-slate-700">
+                                        Password
+                                    </Label>
+
+                                    <Input
+                                        type="password"
+                                        value={selectedUser.password || ""}
+                                        onChange={(e) =>
+                                            setSelectedUser({
+                                                ...selectedUser,
+                                                password: e.target.value,
+                                            })
+                                        }
+                                        className="rounded-lg border-slate-300 bg-white focus:border-blue-500 focus:ring-blue-500"
+                                        placeholder="Enter password"
+                                    />
+                                </div>
+
+
+                                {/* ADDRESS */}
+                                <div>
+                                    <Label className="mb-1.5 block text-sm font-medium text-slate-700">
+                                        Address
+                                    </Label>
+
+                                    <Input
+                                        type="text"
+                                        value={selectedUser.address || ""}
+                                        onChange={(e) =>
+                                            setSelectedUser({
+                                                ...selectedUser,
+                                                address: e.target.value,
+                                            })
+                                        }
+                                        className="rounded-lg border-slate-300 bg-white focus:border-blue-500 focus:ring-blue-500"
+                                        placeholder="Enter address"
+                                    />
+                                </div>
+
+
+                                {/* PHONE */}
+                                <div>
+                                    <Label className="mb-1.5 block text-sm font-medium text-slate-700">
+                                        Phone Number
+                                    </Label>
+
+                                    <Input
+                                        type="text"
+                                        value={selectedUser.phonenumber || ""}
+                                        onChange={(e) =>
+                                            setSelectedUser({
+                                                ...selectedUser,
+                                                phonenumber: e.target.value,
+                                            })
+                                        }
+                                        className="rounded-lg border-slate-300 bg-white focus:border-blue-500 focus:ring-blue-500"
+                                        placeholder="Enter phone number"
+                                    />
+                                </div>
+
+
+                                {/* EMAIL */}
+                                <div>
+                                    <Label className="mb-1.5 block text-sm font-medium text-slate-700">
+                                        Email
+                                    </Label>
+
+                                    <Input
+                                        type="email"
+                                        value={selectedUser.emailid || ""}
+                                        onChange={(e) =>
+                                            setSelectedUser({
+                                                ...selectedUser,
+                                                emailid: e.target.value,
+                                            })
+                                        }
+                                        className="rounded-lg border-slate-300 bg-white focus:border-blue-500 focus:ring-blue-500"
+                                        placeholder="Enter email address"
+                                    />
+                                </div>
+
+
+                                {/* ROLE */}
+                                <div>
+                                    <Label className="mb-1.5 block text-sm font-medium text-slate-700">
+                                        Role
+                                    </Label>
+
+                                    <select
+                                        value={selectedUser.role || ""}
+                                        onChange={(e) =>
+                                            setSelectedUser({
+                                                ...selectedUser,
+                                                role: e.target.value,
+                                            })
+                                        }
+                                        className="h-11 w-full rounded-lg border border-slate-300 bg-white px-4 text-sm text-slate-700 outline-none transition-colors focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                                    >
+                                        <option value="">
+                                            Select Role
+                                        </option>
+
+                                        {roles.map((role) => (
+                                            <option key={role} value={role}>
+                                                {role}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+
+
+                                {/* STATUS */}
+                                <div>
+                                    <Label className="mb-1.5 block text-sm font-medium text-slate-700">
+                                        Status
+                                    </Label>
+
+                                    <select
+                                        value={selectedUser.status || ""}
+                                        onChange={(e) =>
+                                            setSelectedUser({
+                                                ...selectedUser,
+                                                status: e.target.value,
+                                            })
+                                        }
+                                        className="h-11 w-full rounded-lg border border-slate-300 bg-white px-4 text-sm text-slate-700 outline-none transition-colors focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                                    >
+                                        <option value="">
+                                            Select Status
+                                        </option>
+
+                                        {status.map((s) => (
+                                            <option key={s} value={s}>
+                                                {s}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+
+
+                                {/* REFERRED BY */}
+                                <div>
+                                    <Label className="mb-1.5 block text-sm font-medium text-slate-700">
+                                        Referred By
+                                    </Label>
+
+                                    <Input
+                                        type="text"
+                                        value={selectedUser.referredby || ""}
+                                        onChange={(e) =>
+                                            setSelectedUser({
+                                                ...selectedUser,
+                                                referredby: e.target.value,
+                                            })
+                                        }
+                                        className="rounded-lg border-slate-300 bg-white focus:border-blue-500 focus:ring-blue-500"
+                                        placeholder="Enter referred by"
+                                    />
+                                </div>
+
+                            </div>
+
+                        </div>
+
+
+                        {/* MODAL FOOTER */}
+                        <div className="flex items-center justify-end gap-3 border-t border-slate-200 px-6 py-4">
+
+                            <Button
+                                variant="outline"
+                                className="rounded-lg border border-slate-300 bg-white px-5 text-slate-700 shadow-sm hover:bg-slate-50"
+                                size="sm"
+                                type="button"
+                                onClick={closeModal}
+                            >
+                                Cancel
+                            </Button>
+
+                            <Button
+                                className="rounded-lg bg-blue-600 px-5 text-white shadow-sm transition-colors hover:bg-blue-700"
+                                size="sm"
+                                type="button"
+                                onClick={handleSave}
+                            >
+                                {isEditMode
+                                    ? "Save Changes"
+                                    : "Add User"}
+                            </Button>
+
+                        </div>
+
+                    </form>
+
                 </div>
-            </form>
-        </div>
-    </Modal>
-</>
+
+            </Modal>
+        </>
     );
 }
-

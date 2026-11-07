@@ -1,11 +1,9 @@
 
-import {useEffect, useState} from "react";
-import api from "../common/axiosConfig";
 
 
 export default function SidebarWidget() {
 
-    const [todayRate, setTodayRate] = useState<any>(null);
+    /*const [todayRate, setTodayRate] = useState<any>(null);
     const [loading, setLoading] = useState(true);
     useEffect(() => {
         fetchViewRate();
@@ -30,10 +28,11 @@ export default function SidebarWidget() {
                     Loading rate...
                 </div>
             );
-        }
+        }*/
 
   return (
-      <div className="mx-auto mb-10 w-full max-w-60 rounded-2xl bg-gray-50 px-4 py-5 text-center dark:bg-white/[0.03]">
+      <div></div>
+     /* <div className="mx-auto mb-10 w-full max-w-60 rounded-2xl bg-gray-50 px-4 py-5 text-center dark:bg-white/[0.03]">
 
           <h3 className="mb-3 text-lg font-bold text-gray-900 dark:text-white">
               As of Date: {todayRate?.rateDate}
@@ -47,6 +46,6 @@ export default function SidebarWidget() {
               Silver : ₹ {todayRate?.silverRate}/Gram
           </p>
 
-      </div>
+      </div>*/
   );
 }

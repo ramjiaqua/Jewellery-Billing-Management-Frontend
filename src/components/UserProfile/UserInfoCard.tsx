@@ -1,20 +1,25 @@
 import api from "../../common/axiosConfig.tsx";
-import {useEffect, useState} from "react";
+import { useEffect, useState } from "react";
 
 export default function UserInfoCard() {
     const [user, setUser] = useState<any>(null);
     const [loading, setLoading] = useState(true);
+
     const username = localStorage.getItem("username");
+
     const getUserByUsername = async (username: string) => {
         const response = await api.get(`/api/users/profile/${username}`);
-        console.log('/api/users/profile/${username}');
-        console.log(response);
         return response.data;
     };
+
     useEffect(() => {
         const fetchUser = async () => {
             try {
-                if (!username) return;
+                if (!username) {
+                    setLoading(false);
+                    return;
+                }
+
                 const data = await getUserByUsername(username);
                 setUser(data);
             } catch (err) {
@@ -24,173 +29,294 @@ export default function UserInfoCard() {
             }
         };
 
-        if (username) fetchUser();
+        fetchUser();
     }, [username]);
 
-    console.log(user);
-    if (loading) return <div className="flex items-center justify-center py-20">
+    /* -------------------- Loading -------------------- */
 
-        <div className="text-center">
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center py-12">
+                <div className="text-center">
+                    <div
+                        className="
+                            mx-auto
+                            h-10
+                            w-10
+                            animate-spin
+                            rounded-full
+                            border-4
+                            border-blue-100
+                            border-t-blue-600
+                        "
+                    />
 
+                    <p className="mt-3 text-sm font-medium text-slate-500">
+                        Loading Profile...
+                    </p>
+                </div>
+            </div>
+        );
+    }
+
+    /* -------------------- No User -------------------- */
+
+    if (!user) {
+        return (
             <div
-                className="mx-auto h-12 w-12 animate-spin rounded-full border-4 border-yellow-500 border-t-transparent"></div>
+                className="
+                    rounded-xl
+                    border
+                    border-red-200
+                    bg-red-50
+                    p-6
+                    text-center
+                "
+            >
+                <h2 className="text-lg font-semibold text-red-600">
+                    No Profile Found
+                </h2>
 
-            <p className="mt-4 text-yellow-700 font-semibold">
+                <p className="mt-1 text-sm text-red-500">
+                    Unable to load the user profile.
+                </p>
+            </div>
+        );
+    }
 
-                Loading Profile...
-
-            </p>
-
-        </div>
-
-    </div>;
-
-    if (!user) return <div className="rounded-3xl bg-red-50 border border-red-200 p-8 text-center">
-
-        <h2 className="text-red-600 text-xl">
-
-            No Profile Found
-
-        </h2>
-
-    </div>;
-
+    /* -------------------- Profile -------------------- */
 
     return (
-        <>
-            <div className="
-rounded-3xl
-border
-border-yellow-300
-bg-gradient-to-br
-from-white
-via-yellow-50
-to-yellow-100
-shadow-xl
-p-8
-">
-                <div className="flex flex-col gap-5 xl:flex-row xl:items-center xl:justify-between">
-                    <div className="flex flex-col items-center w-full gap-6 xl:flex-row">
+        <div className="min-h-screen bg-slate-50 p-4 sm:p-6">
+
+            {/* Page Header */}
+            <div
+                className="
+                    mb-5
+                    flex
+                    items-center
+                    justify-between
+                    rounded-xl
+                    border
+                    border-slate-200
+                    bg-white
+                    px-5
+                    py-4
+                    shadow-sm
+                "
+            >
+                <div>
+                    <h1 className="text-xl font-semibold text-slate-800">
+                        My Profile
+                    </h1>
+
+                    <p className="mt-0.5 text-sm text-slate-500">
+                        View your account and profile information
+                    </p>
+                </div>
+            </div>
+
+            <div className="space-y-5">
+
+                {/* Profile Summary */}
+                <div
+                    className="
+                        rounded-xl
+                        border
+                        border-slate-200
+                        bg-white
+                        p-5
+                        shadow-sm
+                    "
+                >
+                    <div
+                        className="
+                            flex
+                            flex-col
+                            items-center
+                            gap-5
+                            sm:flex-row
+                        "
+                    >
+                        {/* Profile Image */}
                         <div
                             className="
-h-28
-w-28
-overflow-hidden
-rounded-full
-border-4
-border-white
-shadow-2xl
-ring-4
-ring-yellow-300
-"><img src="/images/user/Male.jpg" alt="user"   className="h-full w-full object-cover"/>
+                                h-24
+                                w-24
+                                shrink-0
+                                overflow-hidden
+                                rounded-full
+                                border-4
+                                border-white
+                                shadow-sm
+                                ring-1
+                                ring-slate-200
+                            "
+                        >
+                            <img
+                                src="/images/user/Male.jpg"
+                                alt="User"
+                                className="h-full w-full object-cover"
+                            />
                         </div>
-                        <div className="order-3 xl:order-2">
-                            <h2 className="text-3xl font-bold">
-                                {user.fullname}
+
+                        {/* User Details */}
+                        <div className="text-center sm:text-left">
+                            <h2 className="text-2xl font-semibold text-slate-800">
+                                {user.fullname || "-"}
                             </h2>
 
-                            <p className="mt-2 text-yellow-100">
-                                {user.role}
+                            <p className="mt-1 text-sm text-slate-500">
+                                @{user.username || "-"}
                             </p>
+
+                            <div className="mt-2">
+                                <span
+                                    className="
+                                        inline-flex
+                                        items-center
+                                        rounded-full
+                                        bg-blue-50
+                                        px-3
+                                        py-1
+                                        text-xs
+                                        font-medium
+                                        text-blue-700
+                                    "
+                                >
+                                    {user.role || "-"}
+                                </span>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
-            <div className="
-rounded-3xl
-border
-border-yellow-300
-bg-gradient-to-br
-from-white
-via-yellow-50
-to-yellow-100
-shadow-xl
-p-8
-">
-                <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
-                    <div>
-                      <div className="mb-8 border-b border-yellow-300 pb-4">
-                        <h2 className="text-2xl font-bold text-yellow-700">
-                          👤 Personal Information
+
+                {/* Personal Information */}
+                <div
+                    className="
+                        rounded-xl
+                        border
+                        border-slate-200
+                        bg-white
+                        p-5
+                        shadow-sm
+                    "
+                >
+                    {/* Section Header */}
+                    <div
+                        className="
+                            mb-5
+                            border-b
+                            border-slate-200
+                            pb-4
+                        "
+                    >
+                        <h2 className="text-lg font-semibold text-slate-800">
+                            Personal Information
                         </h2>
-                      </div>
 
-                        <div
-                            className="
-grid
-grid-cols-1
-md:grid-cols-2
-xl:grid-cols-3
-gap-6
-">
-                          <div className="rounded-2xl border border-yellow-200 bg-white p-5 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ">
-                            <p className="text-xs uppercase tracking-widest text-yellow-600">
-                              👤 Name
-                            </p>
-                            <p className="mt-2 text-lg font-semibold text-gray-800">
-                              {user.fullname}
-                            </p>
-                          </div>
-
-                          <div className="rounded-2xl border border-yellow-200 bg-white p-5 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ">
-
-                          <p className="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
-                                    👤 User Name
-                                </p>
-                            <p className="mt-2 text-lg font-semibold text-gray-800">
-                                    {user.username}
-                                </p>
-                            </div>
-
-
-                          <div className="rounded-2xl border border-yellow-200 bg-white p-5 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ">
-
-                            <p className="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
-                                    📧 Email address
-                                </p>
-                            <p className="mt-2 text-lg font-semibold text-gray-800">
-                                    {user.emailid}
-                                </p>
-                            </div>
-
-                          <div className="rounded-2xl border border-yellow-200 bg-white p-5 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ">
-
-                          <p className="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
-                                    📱 Mobile
-                                </p>
-                            <p className="mt-2 text-lg font-semibold text-gray-800">
-                                    {user.phonenumber}
-                                </p>
-                            </div>
-
-                          <div className="rounded-2xl border border-yellow-200 bg-white p-5 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ">
-
-                          <p className="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
-                                    🏠 Address
-                                </p>
-                            <p className="mt-2 text-lg font-semibold text-gray-800">
-                                    {user.address}
-                                </p>
-                            </div>
-
-                          <div className="rounded-2xl border border-yellow-200 bg-white p-5 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ">
-
-                          <p className="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
-                                    📅 Service Date
-                                </p>
-                            <p className="mt-2 text-lg font-semibold text-gray-800">
-                                    {user.startdate}
-                                </p>
-                            </div>
-                        </div>
+                        <p className="mt-1 text-sm text-slate-500">
+                            Your account and contact details
+                        </p>
                     </div>
 
+                    {/* Information Grid */}
+                    <div
+                        className="
+                            grid
+                            grid-cols-1
+                            gap-4
+                            md:grid-cols-2
+                            xl:grid-cols-3
+                        "
+                    >
+                        {/* Name */}
+                        <ProfileField
+                            label="Name"
+                            value={user.fullname}
+                        />
 
+                        {/* Username */}
+                        <ProfileField
+                            label="Username"
+                            value={user.username}
+                        />
+
+                        {/* Email */}
+                        <ProfileField
+                            label="Email Address"
+                            value={user.emailid}
+                        />
+
+                        {/* Mobile */}
+                        <ProfileField
+                            label="Mobile"
+                            value={user.phonenumber}
+                        />
+
+                        {/* Address */}
+                        <ProfileField
+                            label="Address"
+                            value={user.address}
+                        />
+
+                        {/* Service Date */}
+                        <ProfileField
+                            label="Service Date"
+                            value={user.startdate}
+                        />
+                    </div>
                 </div>
-
-
             </div>
+        </div>
+    );
+}
 
-        </>
+/* -------------------- Reusable Field -------------------- */
+
+function ProfileField({
+    label,
+    value,
+}: {
+    label: string;
+    value: any;
+}) {
+    return (
+        <div
+            className="
+                rounded-lg
+                border
+                border-slate-200
+                bg-white
+                p-4
+                transition-colors
+                hover:border-slate-300
+                hover:bg-slate-50
+            "
+        >
+            <p
+                className="
+                    text-xs
+                    font-medium
+                    uppercase
+                    tracking-wide
+                    text-slate-500
+                "
+            >
+                {label}
+            </p>
+
+            <p
+                className="
+                    mt-2
+                    break-words
+                    text-base
+                    font-semibold
+                    text-slate-800
+                "
+            >
+                {value || "-"}
+            </p>
+        </div>
     );
 }
